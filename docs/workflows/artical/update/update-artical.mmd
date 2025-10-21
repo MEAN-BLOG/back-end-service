@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant User as Authenticated User
+    participant Frontend as Angular App
+    participant Backend as Node/Express
+    participant Validation as article.validation
+    participant MongoDB
+    participant CASL as CASL Ability (check update Article)
+
+    %% User requests to edit article
+    User->>Frontend: Fill edit article form (title, content, image, tags)
+    Frontend->>Backend: PUT /articles/:id + JWT
+
+    %% Step 1: Decode JWT
+    Backend->>Backend: Decode JWT to get userId & role
+
+    %% Step 2: Fetch article first
+    Backend->>MongoDB: Get article by :id
+    MongoDB-->>Backend: Article data
+    alt Article not found
+        Backend-->>Frontend: 404 Not Found
+        Frontend-->>User: Show error
+    else Article exists
+        %% Step 3: Ability check with article context
+        Backend->>CASL: Can user 'update' this Article?
+        alt Ability denies
+            CASL-->>Backend: Forbidden
+            Backend-->>Frontend: 403 Forbidden ("Cannot edit this article")
+            Frontend-->>User: Show error
+        else Ability allows
+            %% Step 4: Validate input
+            Backend->>Validation: Validate input fields
+            Validation-->>Backend: Return valid or errors
+            alt Validation fails
+                Backend-->>Frontend: 400 Bad Request (validation errors)
+                Frontend-->>User: Show error messages
+            else Validation passes
+                %% Step 5: Update article
+                Backend->>MongoDB: Update article with new data
+                MongoDB-->>Backend: Updated article
+                Backend-->>Frontend: 200 OK + updated article
+                Frontend-->>User: Show success confirmation
+            end
+        end
+    end

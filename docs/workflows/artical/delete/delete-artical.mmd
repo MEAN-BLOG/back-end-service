@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant User as Authenticated User
+    participant Frontend as Angular App
+    participant Backend as Node/Express
+    participant MongoDB
+    participant CASL as CASL Ability (check delete Article)
+    participant Services as ArticleService
+
+    %% User requests to delete article
+    User->>Frontend: Click "Delete" on article
+    Frontend->>Backend: DELETE /articles/:id + JWT
+
+    %% Step 1: Decode JWT
+    Backend->>Backend: Decode JWT, get userId & role
+
+    %% Step 2: CASL ability check
+    Backend->>CASL: Can user 'delete' Article?
+    alt Ability denies (not Admin)
+        CASL-->>Backend: Forbidden
+        Backend-->>Frontend: 403 Forbidden ("Only Admin can delete articles")
+        Frontend-->>User: Show error
+    else Ability allows (Admin)
+        %% Step 3: Fetch article
+        Backend->>MongoDB: Get article by :id
+        MongoDB-->>Backend: Article data
+        alt Article not found
+            Backend-->>Frontend: 404 Not Found
+            Frontend-->>User: Show error
+        else Article exists
+            %% Step 4: Delete article cascade
+            Backend->>Services: ArticleService.deleteArticleWithRelations(articleId)
+            Services->>MongoDB: Delete all Replies linked to Comments
+            Services->>MongoDB: Delete all Comments linked to Article
+            Services->>MongoDB: Optionally delete Notifications linked to Article
+            Services->>MongoDB: Delete Article itself
+            MongoDB-->>Services: Success
+            Services-->>Backend: Deletion complete
+            Backend-->>Frontend: 200 OK ("Article and related data deleted")
+            Frontend-->>User: Show confirmation
+        end
+    end

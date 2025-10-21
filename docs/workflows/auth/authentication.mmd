@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Backend
+    participant Validation
+    participant MongoDB
+
+    %% Registration Flow
+    User->>Frontend: Fill registration form
+    Frontend->>Backend: POST /auth/register {email, password, name}
+    Backend->>Validation: Validate input
+    Validation-->>Backend: Success / Fail
+    alt Validation fails
+        Backend-->>Frontend: 400 Bad Request
+    else Validation succeeds
+        Backend->>MongoDB: Check if email exists
+        alt Email exists
+            MongoDB-->>Backend: User found
+            Backend-->>Frontend: 409 Conflict (User exists)
+        else Email not found
+            Backend->>Backend: Hash password, assign role 'guest'
+            Backend->>MongoDB: Save new user
+            MongoDB-->>Backend: User saved
+            Backend-->>Frontend: 201 Created (Success)
+        end
+    end
+
+    %% Login Flow
+    User->>Frontend: Fill login form
+    Frontend->>Backend: POST /auth/login {email, password}
+    Backend->>MongoDB: Fetch user by email
+    alt User not found
+        MongoDB-->>Backend: No user
+        Backend-->>Frontend: 401 Unauthorized
+    else User found
+        Backend->>Backend: Compare password (bcrypt)
+        alt Password invalid
+            Backend-->>Frontend: 401 Unauthorized
+        else Password valid
+            Backend->>Backend: Generate JWT + Refresh Token
+            Backend-->>Frontend: 200 OK + tokens
+        end
+    end

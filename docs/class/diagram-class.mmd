@@ -1,0 +1,41 @@
+classDiagram
+direction LR
+    class User {
+	    +string firstName      %% required, min length 2
+	    +string lastName       %% required, min length 2
+	    +string email          %% required, valid email format
+	    +string password       %% required, min length 6, must include 1 uppercase, 1 lowercase, 1 special character
+	    +string role           %% required, enum: guest, writer, editor, admin
+    }
+
+    class Article {
+	    +string title          %% required, min length 5
+	    +string content        %% required, min length 10
+	    +string image          %% optional, valid URL
+	    +string[] tags         %% optional, array of strings
+	    +ObjectId[] commentIds %% references to Comments
+	    +ObjectId userId       %% reference to User(created the article)
+    }
+
+    class Comment {
+	    +string content        %% required, min length 1
+	    +ObjectId articleId    %% reference to Article
+	    +ObjectId[] replyIds   %% references to Replies
+	    +ObjectId userId       %% reference to User(created the comment)
+    }
+
+    class Reply {
+	    +string content        %% required, min length 1
+	    +ObjectId userId       %% reference to User
+	    +ObjectId commentId    %% reference to Comment(created the reply)
+    }
+
+    class Notification {
+        +ObjectId _id            %% MongoDB unique ID
+        +ObjectId userId         %% reference to User (receiver)
+        +string type             %% enum: "comment", "reply", "system"
+        +string message          %% notification content
+        +ObjectId referenceId    %% optional, reference to related article/comment/reply
+        +boolean read            %% default: false
+        +Date createdAt          %% timestamp
+    }
