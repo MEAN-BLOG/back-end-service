@@ -1,4 +1,3 @@
-
 # Backend Service — Collaborative Blog Platform
 
 A **TypeScript-based backend service** for a collaborative multi-author blog platform built with **Node.js, Express, MongoDB**, and **Socket.io**.  
@@ -8,7 +7,7 @@ Implements **JWT authentication**, **dynamic role-based permissions**, **real-ti
 
 ## Tech Stack
 
-- **Node.js** + **Express.js**  
+- **Node.js** + **Express.js**
 - **TypeScript**
 - **MongoDB** + **Mongoose**
 - **CASL** (role-based permissions & access control)
@@ -103,17 +102,20 @@ backend-service/
 ## Setup & Installation
 
 ### 1. Clone the repository
+
 ```
 git clone git@github.com:MEAN-BLOG/back-end-service.git
 cd backend-service
 ```
 
 ### 2. Install dependencies
+
 ```
 npm install
 ```
 
 ### 3. Configure environment variables
+
 Create a `.env` file based on `.env.example`:
 
 ```
@@ -125,11 +127,13 @@ CORS_ORIGIN=http://localhost:5000
 ```
 
 ### 4. Run in development mode
+
 ```
 npm run dev
 ```
 
 ### 5. Build for production
+
 ```
 npm run build
 npm start
@@ -174,7 +178,9 @@ This pattern ensures **clean separation of concerns** while keeping inter-module
 Swagger is auto-generated from route decorators and OpenAPI annotations.
 
 ### Access Swagger UI:
+
 Once the server is running:
+
 ```
 http://localhost:4000/api-docs
 ```
@@ -186,6 +192,7 @@ http://localhost:4000/api-docs
 Unit and integration tests are written using **Jest**.
 
 ### Run tests
+
 ```
 npm test
 ```
@@ -194,21 +201,21 @@ npm test
 
 ## Scripts
 
-| Command | Description |
-|----------|--------------|
-| `npm run dev` | Start development server with nodemon |
-| `npm run build` | Compile TypeScript to JavaScript |
-| `npm start` | Run compiled server |
-| `npm test` | Run Jest tests |
-| `npm run lint` | Run ESLint code checks |
+| Command         | Description                           |
+| --------------- | ------------------------------------- |
+| `npm run dev`   | Start development server with nodemon |
+| `npm run build` | Compile TypeScript to JavaScript      |
+| `npm start`     | Run compiled server                   |
+| `npm test`      | Run Jest tests                        |
+| `npm run lint`  | Run ESLint code checks                |
 
 ---
 
 ## Future Improvements
 
-- Add **Redis caching** for performance  
-- Integrate **Web Push API** for real-time notifications  
-- Implement **rate-limited analytics tracking**  
+- Add **Redis caching** for performance
+- Integrate **Web Push API** for real-time notifications
+- Implement **rate-limited analytics tracking**
 - Deploy using **Docker + Nginx reverse proxy**
 
 ---
