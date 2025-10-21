@@ -26,6 +26,16 @@ const options: swaggerJsdoc.Options = {
         description: 'development server',
       },
     ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Provide a valid JWT access token',
+        },
+      },
+    },
   },
   apis: [
     path.resolve(__dirname, '../modules/**/*.ts'),
