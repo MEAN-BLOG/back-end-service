@@ -1,0 +1,144 @@
+{
+  "info": {
+    "name": "Blog API - Auth Flow",
+    "description": "Postman collection for testing Blog API authentication flow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login or Register User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": "// Helper function to handle login response\nfunction handleLoginResponse(response) {\n    const jsonData = response.json();\n    pm.test(\"Login successful\", function() {\n        pm.expect(jsonData).to.have.property('success', true);\n        if (jsonData.data && jsonData.data.user) {\n            pm.environment.set('testEmail', jsonData.data.user.email);\n            pm.environment.set('userId', jsonData.data.user._id);\n        }\n        if (jsonData.data && jsonData.data.accessToken) {\n            // Store the actual access token\n            const accessToken = jsonData.data.accessToken;\n            pm.environment.set('accessToken', accessToken);\n            pm.environment.set('refreshToken', jsonData.data.refreshToken);\n        }\n    });\n}\n\n// Main test logic\npm.test(\"Login or Register successful\", function() {\n    if (pm.response.code === 200 || pm.response.code === 201) {\n        // Successful login\n        handleLoginResponse(pm.response);\n    } else if (pm.response.code === 401 || pm.response.code === 409) {\n        // If login failed, try to register\n        const testUser = {\n            firstName: 'Test',\n            lastName: 'User',\n            email: pm.variables.get('testUserEmail'),\n            password: pm.variables.get('testUserPassword'),\n            role: 'user'\n        };\n        \n        pm.send({\n            url: pm.variables.get('baseUrl') + '/api/v1/auth/register',\n            method: 'POST',\n            header: { 'Content-Type': 'application/json' },\n            body: {\n                mode: 'raw',\n                raw: JSON.stringify(testUser)\n            }\n        }, function(err, response) {\n            if (err) {\n                pm.test('Registration failed', function() {\n                    pm.expect.fail('Registration failed: ' + err);\n                });\n                return;\n            }\n            \n            const regData = response.json();\n            pm.test('Registration successful', function() {\n                pm.expect(regData).to.have.property('success', true);\n                if (regData.data && regData.data.user) {\n                    pm.environment.set('testEmail', regData.data.user.email);\n                    pm.environment.set('userId', regData.data.user._id);\n                }\n            });\n            \n            // After registration, log in\n            if (regData.success) {\n                pm.send({\n                    url: pm.variables.get('baseUrl') + '/api/v1/auth/login',\n                    method: 'POST',\n                    header: { 'Content-Type': 'application/json' },\n                    body: {\n                        mode: 'raw',\n                        raw: JSON.stringify({\n                            email: testUser.email,\n                            password: testUser.password\n                        })\n                    }\n                }, function(err, loginResponse) {\n                    if (err) {\n                        pm.test('Login after registration failed', function() {\n                            pm.expect.fail('Login after registration failed: ' + err);\n                        });\n                        return;\n                    }\n                    \n                    handleLoginResponse(loginResponse);\n                });\n            }\n        });\n    } else {\n        pm.test('Unexpected response code', function() {\n            pm.expect.fail('Unexpected response code: ' + pm.response.code);\n        });\n    }\n});",
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"{{testUserEmail}}\",\n    \"password\": \"{{testUserPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Refresh Access Token",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": "// Log the refresh token being used\nconst refreshToken = pm.environment.get('refreshToken');\n\n// Verify we have a valid refresh token\npm.test(\"Refresh token exists\", function() {\n    pm.expect(refreshToken, 'Refresh token is missing. Make sure login was successful.').to.be.a('string').that.is.not.empty;\n});",
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": "// Test 1: Check status code\npm.test(\"Status code is 200\", function () { \n    pm.response.to.have.status(200); \n});\n\n// Test 2: Check response has new access token\npm.test(\"Response has new access token\", function () { \n    const jsonData = pm.response.json();\n    pm.expect(jsonData).to.have.property('success', true);\n    pm.expect(jsonData).to.have.nested.property('data.accessToken');\n    \n    if (jsonData.success) {\n        const newAccessToken = jsonData.data.accessToken;\n        \n        // Also update refresh token if a new one was provided\n        if (jsonData.data.refreshToken) {\n            pm.environment.set('refreshToken', jsonData.data.refreshToken);\n        }\n    }\n});",
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/refresh",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "refresh"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout User",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": "// Get the access token from environment variables\nconst accessToken = pm.environment.get('accessToken');\nconst refreshToken = pm.environment.get('refreshToken');\n\n// Log token information (masked for security)\n// Verify we have a valid access token\npm.test(\"Access token exists\", function() {\n    pm.expect(accessToken, 'Access token is missing. Make sure login was successful.').to.be.a('string').that.is.not.empty;\n    pm.expect(accessToken, 'Access token should not be a placeholder').to.not.equal('new-access-token');\n    pm.expect(accessToken, 'Access token should not be \"null\" or \"undefined\"').to.not.include('null').and.to.not.include('undefined');\n});\n\n// Set the Authorization header with the actual token\npm.request.headers.upsert({\n    key: 'Authorization',\n    value: `Bearer ${accessToken}`\n});\n\n// Log the headers to verify",
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": "// Log detailed request and response information\n\ntry {\n    const responseBody = pm.response.text();\n    // Test 1: Check status code\n    pm.test(\"Status code is 200\", function() { \n        pm.response.to.have.status(200); \n    });\n    \n    // Test 2: Check response format\n    if (pm.response.code === 200) {\n        const jsonData = JSON.parse(responseBody);\n        pm.test(\"Logout successful\", function() { \n            pm.expect(jsonData).to.have.property('success', true);\n            pm.expect(jsonData).to.have.property('message', 'Logged out successfully');\n            \n            // Clear tokens from environment on successful logout\n            pm.environment.unset('accessToken');\n            pm.environment.unset('refreshToken');\n        });\n    } else {\n        // If status is not 200, log the error\n        console.error('Logout failed with status:', pm.response.status);\n        if (responseBody) {\n            try {\n                const errorData = JSON.parse(responseBody);\n                console.error('Error details:', errorData);\n                \n                // If the error is due to an invalid token, clear the stored token\n                if (errorData.message && errorData.message.includes('Invalid access token')) {\n                    console.error('Invalid access token detected. Clearing stored tokens.');\n                    pm.environment.unset('accessToken');\n                    pm.environment.unset('refreshToken');\n                }\n            } catch (e) {\n                console.error('Raw error response:', responseBody);\n            }\n        }\n    }\n} catch (error) {\n    console.error('Error processing response:', error);\n    pm.test('Error processing response', function() {\n        pm.expect.fail('Error processing response: ' + error.message);\n    });\n}",
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/logout",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "logout"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "testUserEmail",
+      "value": "testuser@example.com"
+    },
+    {
+      "key": "testUserPassword",
+      "value": "Password123!"
+    }
+  ]
+}
