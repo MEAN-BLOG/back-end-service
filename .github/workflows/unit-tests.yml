@@ -41,7 +41,7 @@ jobs:
 
       - name: Upload Jest coverage report
         if: success() || failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jest-coverage
           path: coverage
