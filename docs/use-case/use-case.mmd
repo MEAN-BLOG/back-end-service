@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant Guest as Guest (User)
+    participant Writer as Writer (User)
+    participant Editor as Editor (User)
+    participant Admin as Admin (User)
+    participant CArticle as "Create Article"
+    participant EArticle as "Edit Article"
+    participant DArticle as "Delete Article"
+    participant CComment as "Create Comment"
+    participant CReply as "Create Reply"
+    participant ManageRoles as "Manage User Roles"
+
+
+    %% Admin actions
+    Admin->>ManageRoles: Can manage user roles
+    Admin->>CArticle: Can create article
+    Admin->>EArticle: Can edit any article
+    Admin->>DArticle: Can delete any article
+    Admin->>CComment: Can create comment
+    Admin->>CReply: Can create reply
+
+
+    %% Editor actions
+    Editor->>CArticle: Can create article
+    Editor->>EArticle: Can edit any article
+    Editor->>CComment: Can create comment
+    Editor->>CReply: Can create reply
+
+
+    %% Writer actions
+    Writer->>CArticle: Can create article
+    Writer->>EArticle: Can edit own article
+    Writer->>CComment: Can create comment
+    Writer->>CReply: Can create reply
+
+    %% Guest actions
+    Guest->>CComment: Can create comment
+    Guest->>CReply: Can create reply
