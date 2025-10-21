@@ -22,7 +22,11 @@
     "check-types": "tsc --pretty --noEmit",
     "check-format": "prettier --check .",
     "check-all": "npm run lint && npm run check-types && npm run check-format",
-    "fix-format": "prettier --write ."
+    "fix-format": "prettier --write .",
+    "changelog:update": "node update-changelog.js",
+    "version:patch": "npm run changelog:update && npm version patch",
+    "version:minor": "npm run changelog:update && npm version minor",
+    "version:major": "npm run changelog:update && npm version major"
   },
   "keywords": [
     "blog",
