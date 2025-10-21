@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2025-10-21
 ## [1.0.0] - 2025-10-21
 
 ## [Unreleased]
@@ -72,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Date | Summary |
 |----------|------|----------|
+| **1.0.1** | 2025-10-21 | Update changelog for v1.0.1 release |
 | **1.0.0** | 2024-12-21 | Initial stable release — Express + TypeScript setup |
 | **0.1.0** | 2024-10-10 | Early development phase — project scaffolding |
 
@@ -97,7 +99,8 @@ When contributing to this project, please update the changelog with your changes
 
 ## 🔗 Version Compare Links
 
-- [Unreleased]: https://github.com/your-org/your-repo/compare/v1.0.0...HEAD  
+- [Unreleased]: https://github.com/your-org/your-repo/compare/v1.0.1...HEAD  
+- [1.0.1]: https://github.com/your-org/your-repo/releases/tag/v1.0.1  
 - [1.0.0]: https://github.com/your-org/your-repo/releases/tag/v1.0.0  
 
 ---
