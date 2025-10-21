@@ -3,11 +3,11 @@ name: Unit Tests
 on:
   pull_request:
     branches:
-      - '**'      # runs for all PRs
+      - '**' # runs for all PRs
   push:
     branches:
       - main
-      - develop  # optional: run on main/develop push
+      - develop # optional: run on main/develop push
 
 jobs:
   unit-tests:
