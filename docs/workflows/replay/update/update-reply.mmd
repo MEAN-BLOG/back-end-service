@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant User as Authenticated User
+    participant Frontend as Angular App
+    participant Backend as Node/Express
+    participant Ability as CASL Ability
+    participant Validation as reply.validation
+    participant MongoDB
+
+    %% User submits update
+    User->>Frontend: Edit reply form (new content)
+    Frontend->>Backend: PUT /replies/:id + JWT
+
+    %% Step 1: Decode JWT & get userId
+    Backend->>Backend: Decode JWT, get userId
+    alt User not found
+        Backend-->>Frontend: 401 Unauthorized ("User not found")
+        Frontend-->>User: Show error
+    else User exists
+        %% Step 2: Fetch reply
+        Backend->>MongoDB: Get reply by replyId
+        MongoDB-->>Backend: Return reply
+        alt Reply not found
+            Backend-->>Frontend: 404 Not Found
+            Frontend-->>User: Show error
+        else Reply exists
+            %% Step 3: Check ability with CASL
+            Backend->>Ability: Can user update this reply? (userId vs reply.userId)
+            alt Not allowed
+                Backend-->>Frontend: 403 Forbidden ("Cannot edit this reply")
+                Frontend-->>User: Show error
+            else Allowed
+                %% Step 4: Validate new content
+                Backend->>Validation: Validate updated reply content
+                Validation-->>Backend: Return valid or errors
+                alt Validation fails
+                    Backend-->>Frontend: 400 Bad Request (validation errors)
+                    Frontend-->>User: Show error
+                else Validation passes
+                    %% Step 5: Update reply in DB
+                    Backend->>MongoDB: Update reply content
+                    MongoDB-->>Backend: Updated reply
+                    %% Step 6: Real-time notification (optional)
+                    Backend->>SocketIO: Emit updateReply event
+                    SocketIO-->>Frontend: Notify relevant users
+                    Backend-->>Frontend: 200 OK + updated reply
+                    Frontend-->>User: Show success confirmation
+                end
+            end
+        end
+    end

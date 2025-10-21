@@ -1,0 +1,66 @@
+flowchart TD
+    %% Start
+    A([Start]):::start --> B{User Action?}:::decision
+
+    %% Registration/Login
+    B --> |Register/Login| C[Validate input]:::action
+    C --> D{Input valid?}:::decision
+    D --> |No| E[Show error, return to Start]:::error
+    D --> |Yes| F[Check existing user]:::action
+    F --> |Exists| E
+    F --> |New user| G[Save user to DB]:::action --> H[Return success]:::success
+
+    %% Article Creation
+    B --> |Create Article| I[Decode JWT & get role]:::action
+    I --> J{Role allowed?}:::decision
+    J --> |No| K[Return 403 Forbidden]:::error
+    J --> |Yes| L[Validate article input]:::action
+    L --> M{Valid?}:::decision
+    M --> |No| K
+    M --> |Yes| N[Save article to DB]:::action --> O[Return 201 Created]:::success
+
+    %% Article Update
+    B --> |Update Article| AP[Decode JWT & get role]:::action
+    AP --> AQ[Fetch article from DB]:::action
+    AQ --> AR{Article exists?}:::decision
+    AR --> |No| K
+    AR --> |Yes| AS[Check role with CASL]:::action
+    AS --> AT{Allowed to update?}:::decision
+    AT --> |No| K
+    AT --> |Yes| AU[Validate updated article input]:::action
+    AU --> AV{Valid?}:::decision
+    AV --> |No| K
+    AV --> |Yes| AW[Update article in DB]:::action --> AX[Return success]:::success
+
+    %% Comment / Reply
+    B --> |Create Comment/Reply| P[Decode JWT & validate user exists]:::action
+    P --> Q[Validate input content]:::action
+    Q --> R{Valid?}:::decision
+    R --> |No| K
+    R --> |Yes| S[Save comment/reply to DB]:::action
+    S --> T[Update related article/comment references]:::action
+    T --> U[Emit real-time notification]:::success
+
+    %% Manage User Roles (Admin)
+    B --> |Manage Roles| V[Decode JWT, check Admin]:::action
+    V --> W{User exists?}:::decision
+    W --> |No| K
+    W --> |Yes| X[Validate role progression]:::action
+    X --> Y{Valid?}:::decision
+    Y --> |No| K
+    Y --> |Yes| Z[Update user role in DB]:::action --> AA[Return success]:::success
+
+    %% End
+    K --> A
+    H --> A
+    O --> A
+    AX --> A
+    U --> A
+    AA --> A
+
+    %% Styles
+    classDef start fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef action fill:#bbf,stroke:#333,stroke-width:1px;
+    classDef decision fill:#ffb,stroke:#333,stroke-width:1px,stroke-dasharray: 5 5;
+    classDef error fill:#f88,stroke:#333,stroke-width:1px;
+    classDef success fill:#8f8,stroke:#333,stroke-width:1px;
