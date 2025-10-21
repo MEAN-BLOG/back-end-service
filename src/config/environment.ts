@@ -4,7 +4,7 @@
  * This module handles loading and typing environment variables for the application.
  */
 
-import { TmongoDbConfig, TserverConfig } from '../types/config-envirements.type';
+import { TmongoDbConfig, TserverConfig, TTokenConfig } from '../types/config-envirements.type';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
@@ -20,7 +20,18 @@ dotenv.config();
  * @property {string} mongoDbDatabase - Name of the MongoDB database
 emails
  */
-const { PORT, mongoDbUserName, mongoDbPassword, mongoDbDatabase } = process.env;
+const {
+  PORT,
+  mongoDbUserName,
+  mongoDbPassword,
+  mongoDbDatabase,
+  DevelopmentServer,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  JWT_ACCESS_EXPIRY,
+  JWT_REFRESH_EXPIRY,
+  NODE_ENV,
+} = process.env;
 
 // Validate required environment variables
 const requiredEnvVars = {
@@ -28,6 +39,12 @@ const requiredEnvVars = {
   mongoDbUserName,
   mongoDbPassword,
   mongoDbDatabase,
+  DevelopmentServer,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  JWT_ACCESS_EXPIRY,
+  JWT_REFRESH_EXPIRY,
+  NODE_ENV,
 };
 
 const missingVars = Object.entries(requiredEnvVars)
@@ -44,6 +61,7 @@ if (missingVars.length > 0) {
  */
 const serverConfig: TserverConfig = {
   PORT: parseInt(PORT as string, 10) || 5001,
+  DevelopmentServer: DevelopmentServer!,
 };
 
 /**
@@ -57,6 +75,16 @@ const mongoDbConfig: TmongoDbConfig = {
 };
 
 /**
+ * JWT connection token and configuration
+ * @type {TTokenConfig}
+ */
+const tokenConfig: TTokenConfig = {
+  JWT_ACCESS_SECRET: JWT_ACCESS_SECRET!,
+  JWT_REFRESH_SECRET: JWT_REFRESH_SECRET!,
+  JWT_ACCESS_EXPIRY: JWT_ACCESS_EXPIRY!,
+  JWT_REFRESH_EXPIRY: JWT_REFRESH_EXPIRY!,
+};
+/**
  * Consolidated environment variables object
  * @constant
  * @type {Object}
@@ -66,4 +94,5 @@ const mongoDbConfig: TmongoDbConfig = {
 export const enirementVariables = {
   serverConfig,
   mongoDbConfig,
+  tokenConfig,
 } as const;

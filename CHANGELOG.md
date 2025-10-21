@@ -7,11 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.0] - 2024-12-21
+
+### 🚀 Added
+
+- Initial project setup with TypeScript + Express
+- Core middleware (`helmet`, `cors`, `morgan`)
+- Environment-based configuration system
+- Development and production environment setup
+- Initial documentation and project structure
+
+### 🧩 Changed
+
+- Standardized folder structure for modular expansion
+
+---
+
 ## [1.0.1] - 2025-10-21
-
-## [1.0.0] - 2025-10-21
-
-## [Unreleased]
 
 ### 🚀 Added
 
@@ -61,29 +73,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2024-12-21
+## [1.0.2] - 2025-10-21
 
 ### 🚀 Added
 
-- Initial project setup with TypeScript + Express
-- Core middleware (`helmet`, `cors`, `morgan`)
-- Environment-based configuration system
-- Development and production environment setup
-- Initial documentation and project structure
+- **Authentication Module**
+  - Completed all auth routes: `register`, `login`, `logout`, `refresh-token`, `profile details`
+  - JWT-based access and refresh token management
+  - Role-based access middleware fully integrated
+- **API Documentation**
+  - Swagger docs updated for all auth endpoints
+- **Testing**
+  - Unit and integration tests for authentication flows
 
 ### 🧩 Changed
 
-- Standardized folder structure for modular expansion
+- Refined middleware error handling for auth routes
+- Improved response format consistency across all endpoints
+- Updated Zod validation schemas for stricter input checks
+
+### 🐞 Fixed
+
+- Resolved token expiration edge cases
+- Fixed minor TypeScript type mismatches in auth controllers
+
+### ⚠️ Deprecated
+
+- Temporary mock authentication endpoints removed
 
 ---
 
 ## 🧱 Version History
 
-| Version   | Date       | Summary                                             |
-| --------- | ---------- | --------------------------------------------------- |
-| **1.0.1** | 2025-10-21 | Update changelog for v1.0.1 release                 |
-| **1.0.0** | 2024-12-21 | Initial stable release — Express + TypeScript setup |
-| **0.1.0** | 2024-10-10 | Early development phase — project scaffolding       |
+| Version   | Date       | Summary                                                      |
+| --------- | ---------- | ------------------------------------------------------------ |
+| **1.0.0** | 2025-10-21 | Initial stable release — Express + TypeScript setup          |
+| **1.0.1** | 2025-10-21 | Update changelog for v1.0.1 release                          |
+| **1.0.2** | 2025-10-21 | Completed authentication module with full routes and testing |
 
 ---
 
@@ -109,8 +135,9 @@ When contributing to this project, please update the changelog with your changes
 
 ## 🔗 Version Compare Links
 
-- [Unreleased]: https://github.com/your-org/your-repo/compare/v1.0.1...HEAD
-- [1.0.1]: https://github.com/your-org/your-repo/releases/tag/v1.0.1
-- [1.0.0]: https://github.com/your-org/your-repo/releases/tag/v1.0.0
+- [Unreleased]: https://github.com/your-org/your-repo/compare/v0.0.0...HEAD
+- [1.0.0] [https://github.com/MEAN-BLOG/back-end-service/releases/tag/v1.0.0]
+- [1.0.1] [https://github.com/MEAN-BLOG/back-end-service/releases/tag/v1.0.1]
+- [1.0.2] [https://github.com/MEAN-BLOG/back-end-service/releases/tag/v1.0.2]
 
 ---

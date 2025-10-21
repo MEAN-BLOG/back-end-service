@@ -51,9 +51,3 @@ const newChangelog = changelog.replace(unreleasedRegex, `${newVersionHeader}\n\n
 
 // Write back to file
 fs.writeFileSync(changelogPath, newChangelog);
-
-console.log(`✅ CHANGELOG.md updated for version ${newVersion}`);
-console.log(`📝 Remember to:`);
-console.log(`   1. Review and edit the new version section`);
-console.log(`   2. Run: npm run version:${versionType}`);
-console.log(`   3. Commit your changes`);

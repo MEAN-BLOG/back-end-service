@@ -1,0 +1,47 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - '**' # runs for all PRs
+  push:
+    branches:
+      - main
+      - develop # optional: run on main/develop push
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    env:
+      PORT: ${{ secrets.PORT }}
+      NODE_ENV: test
+      DevelopmentServer: ${{ secrets.DevelopmentServer }}
+      mongoDbUserName: ${{ secrets.mongoDbUserName }}
+      mongoDbPassword: ${{ secrets.mongoDbPassword }}
+      mongoDbDatabase: ${{ secrets.mongoDbDatabase }}
+      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+      JWT_ACCESS_EXPIRY: ${{ secrets.JWT_ACCESS_EXPIRY }}
+      JWT_REFRESH_EXPIRY: ${{ secrets.JWT_REFRESH_EXPIRY }}
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 🛠️ Install dependencies
+        run: npm install
+
+      - name: Run unit tests
+        run: npm run test
+
+      - name: Upload Jest coverage report
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jest-coverage
+          path: coverage

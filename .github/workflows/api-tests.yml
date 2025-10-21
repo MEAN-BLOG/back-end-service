@@ -1,0 +1,60 @@
+name: Newman API Tests
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  newman-tests:
+    runs-on: ubuntu-latest
+    env:
+      PORT: ${{ secrets.PORT }}
+      NODE_ENV: ${{ secrets.NODE_ENV }}
+      DevelopmentServer: ${{ secrets.DevelopmentServer }}
+      mongoDbUserName: ${{ secrets.mongoDbUserName }}
+      mongoDbPassword: ${{ secrets.mongoDbPassword }}
+      mongoDbDatabase: ${{ secrets.mongoDbDatabase }}
+      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+      JWT_ACCESS_EXPIRY: ${{ secrets.JWT_ACCESS_EXPIRY }}
+      JWT_REFRESH_EXPIRY: ${{ secrets.JWT_REFRESH_EXPIRY }}
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 🛠️ Install dependencies
+        run: npm install
+
+      - name: Install Newman globally
+        run: npm install -g newman
+
+      - name: Start server
+        run: |
+          npm run dev &
+          SERVER_PID=$!
+          echo "Server started with PID $SERVER_PID"
+          sleep 5
+          echo $SERVER_PID > .server_pid
+
+      - name: Run Newman tests
+        run: npm run newman
+
+      - name: Stop server
+        run: |
+          if [ -f .server_pid ]; then
+            kill $(cat .server_pid)
+            echo "Server stopped"
+          fi
+
+      - name: Upload Newman JSON report
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman-report.json
