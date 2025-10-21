@@ -72,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Temporary mock routes (to be replaced with production endpoints)
 
 ---
+
 ## [1.0.2] - 2025-10-21
 
 ### 🚀 Added
@@ -98,16 +99,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ⚠️ Deprecated
 
-- Temporary mock authentication endpoints removed  
+- Temporary mock authentication endpoints removed
 
 ---
 
 ## 🧱 Version History
 
-| Version   | Date       | Summary                                             |
-| --------- | ---------- | --------------------------------------------------- |
-| **1.0.0** | 2025-10-21 | Initial stable release — Express + TypeScript setup |
-| **1.0.1** | 2025-10-21 | Update changelog for v1.0.1 release                 |
+| Version   | Date       | Summary                                                      |
+| --------- | ---------- | ------------------------------------------------------------ |
+| **1.0.0** | 2025-10-21 | Initial stable release — Express + TypeScript setup          |
+| **1.0.1** | 2025-10-21 | Update changelog for v1.0.1 release                          |
 | **1.0.2** | 2025-10-21 | Completed authentication module with full routes and testing |
 
 ---
