@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [1.0.1] - 2025-10-21
+
 ## [1.0.0] - 2025-10-21
 
 ## [Unreleased]
 
 ### 🚀 Added
+
 - **Database Integration**
   - MongoDB connection setup using Mongoose
   - Centralized connection utility with environment validation
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Strict TypeScript types across models and controllers
 
 ### 🧩 Changed
+
 - Refactored project architecture according to `README.md` guidelines
 - Moved enums and interfaces into shared modules
 - Updated import paths for better module resolution
@@ -42,15 +45,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced folder structure for scalability and clarity
 
 ### 🐞 Fixed
+
 - Environment variable validation issues
 - TypeScript linting and build errors
 - Module resolution and relative path inconsistencies
 
 ### 🗑️ Removed
+
 - Deprecated hardcoded configurations
 - Old sample endpoints no longer in use
 
 ### ⚠️ Deprecated
+
 - Temporary mock routes (to be replaced with production endpoints)
 
 ---
@@ -58,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-12-21
 
 ### 🚀 Added
+
 - Initial project setup with TypeScript + Express
 - Core middleware (`helmet`, `cors`, `morgan`)
 - Environment-based configuration system
@@ -65,17 +72,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial documentation and project structure
 
 ### 🧩 Changed
+
 - Standardized folder structure for modular expansion
 
 ---
 
 ## 🧱 Version History
 
-| Version | Date | Summary |
-|----------|------|----------|
-| **1.0.1** | 2025-10-21 | Update changelog for v1.0.1 release |
+| Version   | Date       | Summary                                             |
+| --------- | ---------- | --------------------------------------------------- |
+| **1.0.1** | 2025-10-21 | Update changelog for v1.0.1 release                 |
 | **1.0.0** | 2024-12-21 | Initial stable release — Express + TypeScript setup |
-| **0.1.0** | 2024-10-10 | Early development phase — project scaffolding |
+| **0.1.0** | 2024-10-10 | Early development phase — project scaffolding       |
 
 ---
 
@@ -84,23 +92,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 When contributing to this project, please update the changelog with your changes.
 
 ### Adding a new entry
-1. Add your updates under the `[Unreleased]` section  
-2. Use one of the categories: `Added`, `Changed`, `Fixed`, `Removed`, `Deprecated`  
-3. Keep entries concise but descriptive  
+
+1. Add your updates under the `[Unreleased]` section
+2. Use one of the categories: `Added`, `Changed`, `Fixed`, `Removed`, `Deprecated`
+3. Keep entries concise but descriptive
 4. Include PR or commit references when relevant (e.g., `[#42]`)
 
 ### Creating a new release
-1. Move `[Unreleased]` changes under a new version section  
-2. Update `package.json` version  
-3. Add the release date  
-4. Create a new empty `[Unreleased]` section for future changes  
+
+1. Move `[Unreleased]` changes under a new version section
+2. Update `package.json` version
+3. Add the release date
+4. Create a new empty `[Unreleased]` section for future changes
 
 ---
 
 ## 🔗 Version Compare Links
 
-- [Unreleased]: https://github.com/your-org/your-repo/compare/v1.0.1...HEAD  
-- [1.0.1]: https://github.com/your-org/your-repo/releases/tag/v1.0.1  
-- [1.0.0]: https://github.com/your-org/your-repo/releases/tag/v1.0.0  
+- [Unreleased]: https://github.com/your-org/your-repo/compare/v1.0.1...HEAD
+- [1.0.1]: https://github.com/your-org/your-repo/releases/tag/v1.0.1
+- [1.0.0]: https://github.com/your-org/your-repo/releases/tag/v1.0.0
 
 ---
