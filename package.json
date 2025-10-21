@@ -26,7 +26,8 @@
     "changelog:update": "node update-changelog.js",
     "version:patch": "npm run changelog:update && npm version patch",
     "version:minor": "npm run changelog:update && npm version minor",
-    "version:major": "npm run changelog:update && npm version major"
+    "version:major": "npm run changelog:update && npm version major",
+    "newman": "newman run postman/blog-auth-flow.postman_collection.json -e postman/blog-api.postman_environment.json   --reporters cli,json   --reporter-json-export newman-report.json"
   },
   "keywords": [
     "blog",
@@ -67,8 +68,13 @@
     "dotenv": "^16.3.1",
     "ejs": "^3.1.10",
     "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
-    "mongoose": "^8.19.2"
+    "mongoose": "^8.19.2",
+    "supertest": "^7.1.4",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -76,14 +82,22 @@
     "@types/ejs": "^3.1.5",
     "@types/express": "^4.17.17",
     "@types/glob": "^8.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.16.0",
+    "@types/supertest": "^6.0.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^9.1.1",
     "nodemon": "^2.0.22",
     "prettier": "^3.6.2",
+    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",

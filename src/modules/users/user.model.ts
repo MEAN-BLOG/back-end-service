@@ -9,7 +9,63 @@ import { IUser } from '../shared/interfaces/schema.interface';
 import { UserRole } from '../shared/enums/role.enum';
 
 /**
- * User schema definition
+ * @openapi
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - email
+ *         - password
+ *         - role
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Unique identifier for the user
+ *           example: "653a17e34b0f33c62b8b4521"
+ *         firstName:
+ *           type: string
+ *           description: User's first name
+ *           example: John
+ *         lastName:
+ *           type: string
+ *           description: User's last name
+ *           example: Doe
+ *         fullName:
+ *           type: string
+ *           readOnly: true
+ *           description: Virtual field combining first and last name
+ *           example: John Doe
+ *         email:
+ *           type: string
+ *           description: User's email address (must be unique)
+ *           format: email
+ *           example: john.doe@example.com
+ *         password:
+ *           type: string
+ *           description: User's password (hashed in database)
+ *           writeOnly: true
+ *           example: StrongP@ss123
+ *         role:
+ *           type: string
+ *           enum:
+ *             - ADMIN
+ *             - USER
+ *             - GUEST
+ *           default: GUEST
+ *           description: Role assigned to the user
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Date when the user was created
+ *           example: 2025-10-21T18:00:00.000Z
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Date when the user was last updated
+ *           example: 2025-10-21T19:00:00.000Z
  */
 const userSchema = new Schema<IUser>(
   {

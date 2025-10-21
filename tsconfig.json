@@ -22,7 +22,14 @@
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "__tests__/**/*.ts", "*.ts", "prettier.config.js"],
-  "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts", "dist", "jest.config.ts"],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "dist",
+    "jest.config.ts",
+    "__tests__/**/*.ts"
+  ],
   "ts-node": {
     "esm": false,
     "experimentalSpecifierResolution": "node",

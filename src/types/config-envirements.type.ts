@@ -32,4 +32,27 @@ export type TserverConfig = {
    * @example 5000
    */
   PORT: number;
+
+  /**
+   * development server
+   * @example domain.com
+   */
+  DevelopmentServer: string;
+
+  /**
+   * mode server runs
+   * @example development
+   */
+  NODE_ENV?: string;
+};
+
+/**
+ * token generation keys
+ * Defines the configuration need for generation token and handle requests
+ */
+export type TTokenConfig = {
+  JWT_ACCESS_SECRET: string;
+  JWT_REFRESH_SECRET: string;
+  JWT_ACCESS_EXPIRY: string;
+  JWT_REFRESH_EXPIRY: string;
 };
