@@ -1,0 +1,34 @@
+name: Render Deploy
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+
+      - name: 🛠️ Install dependencies
+        run: npm install
+
+      - name: 🏗️ Build project
+        run: npm run build
+
+      - name: 📤 Trigger Render Deploy
+        if: github.ref == 'refs/heads/develop'
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          echo "Triggering Render deploy for develop branch..."
+          curl -X POST "$RENDER_DEPLOY_HOOK_URL"

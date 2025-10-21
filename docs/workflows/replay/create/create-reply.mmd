@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant User as Authenticated User
+    participant Frontend as Angular App
+    participant Backend as Node/Express
+    participant Validation as reply.validation
+    participant MongoDB
+    participant SocketIO
+
+    %% User fills reply form
+    User->>Frontend: Fill reply form (content)
+    Frontend->>Backend: POST /comments/:id/replies + JWT
+
+    %% Step 1: Decode JWT & verify user exists
+    Backend->>Backend: Decode JWT, get userId
+    alt User not found
+        Backend-->>Frontend: 401 Unauthorized ("User not found")
+        Frontend-->>User: Show error
+    else User exists
+        %% Step 2: Validate input
+        Backend->>Validation: Validate reply content
+        Validation-->>Backend: Return valid or errors
+        alt Validation fails
+            Backend-->>Frontend: 400 Bad Request (validation errors)
+            Frontend-->>User: Show error
+        else Validation passes
+            %% Step 3: Save reply
+            Backend->>MongoDB: Insert new reply with commentId & userId
+            MongoDB-->>Backend: Reply saved
+            %% Step 4: Update Comment.replyIds
+            Backend->>MongoDB: Push replyId to Comment.replyIds
+            MongoDB-->>Backend: Updated comment
+            %% Step 5: Real-time notification to comment author
+            Backend->>SocketIO: Emit newReply event
+            SocketIO-->>Frontend: Notify comment author
+            Backend-->>Frontend: 201 Created + reply data
+            Frontend-->>User: Show success confirmation
+        end
+    end

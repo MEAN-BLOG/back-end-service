@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant User as Authenticated User
+    participant Frontend as Angular App
+    participant Backend as Node/Express
+    participant Ability as CASL Ability
+    participant Validation as comment.validation
+    participant MongoDB
+
+    %% User submits update
+    User->>Frontend: Edit comment form (new content)
+    Frontend->>Backend: PUT /comments/:id + JWT
+
+    %% Step 1: Decode JWT & get userId
+    Backend->>Backend: Decode JWT, get userId
+    alt User not found
+        Backend-->>Frontend: 401 Unauthorized ("User not found")
+        Frontend-->>User: Show error
+    else User exists
+        %% Step 2: Fetch comment
+        Backend->>MongoDB: Get comment by commentId
+        MongoDB-->>Backend: Return comment
+        alt Comment not found
+            Backend-->>Frontend: 404 Not Found
+            Frontend-->>User: Show error
+        else Comment exists
+            %% Step 3: Check ability with CASL
+            Backend->>Ability: Can user update this comment? (userId vs comment.userId)
+            alt Not allowed
+                Backend-->>Frontend: 403 Forbidden ("Cannot edit this comment")
+                Frontend-->>User: Show error
+            else Allowed
+                %% Step 4: Validate new content
+                Backend->>Validation: Validate updated comment content
+                Validation-->>Backend: Return valid or errors
+                alt Validation fails
+                    Backend-->>Frontend: 400 Bad Request (validation errors)
+                    Frontend-->>User: Show error
+                else Validation passes
+                    %% Step 5: Update comment in DB
+                    Backend->>MongoDB: Update comment content
+                    MongoDB-->>Backend: Updated comment
+                    %% Step 6: Real-time notification (optional)
+                    Backend->>SocketIO: Emit updateComment event
+                    SocketIO-->>Frontend: Notify relevant users
+                    Backend-->>Frontend: 200 OK + updated comment
+                    Frontend-->>User: Show success confirmation
+                end
+            end
+        end
+    end

@@ -1,0 +1,36 @@
+sequenceDiagram
+    participant User as Authenticated User
+    participant Frontend as Angular App
+    participant Backend as Node/Express
+    participant CASL as CASL Ability (check create Article)
+    participant Validation as article.validation
+    participant MongoDB
+
+    %% User fills article form
+    User->>Frontend: Fill article form (title, content, image, tags)
+    Frontend->>Backend: POST /articles + JWT
+
+    %% Step 1: Decode JWT
+    Backend->>Backend: Decode JWT, get userId & role
+
+    %% Step 2: CASL ability check
+    Backend->>CASL: Can user 'create' Article?
+    alt Ability denies
+        CASL-->>Backend: Forbidden
+        Backend-->>Frontend: 403 Forbidden ("Role cannot create article")
+        Frontend-->>User: Show error
+    else Ability allows
+        %% Step 3: Validate input
+        Backend->>Validation: Validate input fields (title, content, tags, image URL)
+        Validation-->>Backend: Return valid or errors
+        alt Validation fails
+            Backend-->>Frontend: 400 Bad Request (validation errors)
+            Frontend-->>User: Show error messages
+        else Validation passes
+            %% Step 4: Save article to DB
+            Backend->>MongoDB: Insert new article with authorId = userId
+            MongoDB-->>Backend: Article saved
+            Backend-->>Frontend: 201 Created + article data
+            Frontend-->>User: Show success confirmation
+        end
+    end

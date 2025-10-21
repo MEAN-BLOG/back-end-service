@@ -1,0 +1,36 @@
+name: Lint & Type Check
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  lint-types:
+    name: Lint, Prettier & TypeScript Checks
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.16.0]
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 🛠️ Install dependencies
+        run: npm install
+
+      - name: 🧹 Run ESLint
+        run: npm run lint
+
+      - name: 🖌️ Run Prettier check
+        run: npm run check-format
+
+      - name: 🔍 TypeScript type check
+        run: npm run check-types

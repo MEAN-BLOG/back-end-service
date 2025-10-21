@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant ElementService as Comment or replay
+    participant NotificationService
+    participant MongoDB
+    participant SocketIO
+
+    %% When a comment or reply is created
+
+    ElementService->>Backend: createDocument(userId, referenceId)
+
+    Backend-->> MongoDB: document save
+    MongoDB-->> Backend: document saved
+
+    alt Element saved with success
+        %% Step 1: Validate notification payload
+        Backend->>NotificationService: createNotification(userId, type, message, referenceId)
+        %% Step 2: Save notification in MongoDB
+        NotificationService->>MongoDB: Insert new notification document
+        MongoDB-->>NotificationService: Notification saved
+        %% Step 3: Emit real-time notification via Socket.IO
+        NotificationService->>SocketIO: Emit 'newNotification' to target user
+        SocketIO-->>Backend: Delivered
+        NotificationService-->>ElementService: Success
+    end

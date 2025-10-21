@@ -1,0 +1,25 @@
+classDiagram
+    class Comment {
+        +ObjectId _id
+        +ObjectId articleId
+        +ObjectId userId
+        +string content
+    }
+
+    class Reply {
+        +ObjectId _id
+        +ObjectId commentId
+        +ObjectId userId
+        +string content
+    }
+
+    class NotificationPayload {
+        +ObjectId userId          %% target user for notification
+        +string type              %% "comment" or "reply"
+        +string message           %% notification text
+        +ObjectId referenceId     %% related Comment._id or Reply._id
+    }
+
+    %% Relationships
+    Comment --> NotificationPayload : provides userId, _id, content
+    Reply --> NotificationPayload : provides userId, _id, content
