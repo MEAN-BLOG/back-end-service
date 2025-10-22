@@ -10,6 +10,7 @@ import { setupSwagger } from './config/swagger';
 import userRoutes from './modules/users/user.routes';
 import articleRoutes from './modules/articles/article.routes';
 import commentRoutes from './modules/comments/comment.routes';
+import replyRoutes from './modules/replies/reply.routes';
 
 const app: Express = express();
 
@@ -20,7 +21,7 @@ setupSwagger(app);
 app.use('/api/v1', userRoutes);
 app.use('/api/v1/articles', articleRoutes);
 app.use('/api/v1/comments', commentRoutes);
-
+app.use('/api/v1/replies', replyRoutes);
 app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
     message: '🚀 Server is running successfully!',
