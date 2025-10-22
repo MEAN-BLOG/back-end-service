@@ -44,6 +44,12 @@ export type TserverConfig = {
    * @example development
    */
   NODE_ENV?: string;
+
+  /**
+   * mode server runs
+   * @example development
+   */
+  CLIENT_URL: string;
 };
 
 /**
