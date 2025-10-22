@@ -4,10 +4,16 @@
  */
 
 import { Router } from 'express';
-import { register, login, getProfile, refreshToken, logout } from './user.controller';
+import * as userController from './user.controller';
 import { validate } from '../../middlewares/validation.middleware';
-import { requireAuth } from '../../middlewares/auth.middleware';
-import { registerSchema, loginSchema } from './user.validation';
+import { authenticate, authorize } from '../../middlewares/auth.middleware';
+import { UserRole } from '../shared/enums/role.enum';
+import {
+  registerSchema,
+  loginSchema,
+  updateRoleSchema,
+  updateProfileSchema,
+} from './user.validation';
 
 const router = Router();
 
@@ -109,7 +115,7 @@ const router = Router();
  *                   type: string
  *                   example: Internal server error during registration
  */
-router.post('/auth/register', validate(registerSchema), register);
+router.route('/auth/register').post(validate(registerSchema), userController.register);
 
 /**
  * @openapi
@@ -210,7 +216,7 @@ router.post('/auth/register', validate(registerSchema), register);
  *                   type: string
  *                   example: Internal server error during login
  */
-router.post('/auth/login', validate(loginSchema), login);
+router.route('/auth/login').post(validate(loginSchema), userController.login);
 
 /**
  * @openapi
@@ -314,7 +320,7 @@ router.post('/auth/login', validate(loginSchema), login);
  *                   type: string
  *                   example: Optional detailed error message (development only)
  */
-router.post('/auth/refresh', refreshToken);
+router.post('/auth/refresh', userController.refreshToken);
 
 /**
  * @openapi
@@ -385,7 +391,10 @@ router.post('/auth/refresh', refreshToken);
  *                   type: string
  *                   example: Internal server error while retrieving profile
  */
-router.get('/auth/profile', requireAuth, getProfile);
+router
+  .route('/auth/profile')
+  .get(authenticate, userController.getProfile)
+  .patch(authenticate, validate(updateProfileSchema), userController.getProfile);
 
 /**
  * @openapi
@@ -438,6 +447,246 @@ router.get('/auth/profile', requireAuth, getProfile);
  *                   type: string
  *                   example: Internal server error during logout
  */
-router.post('/auth/logout', requireAuth, logout);
+router.post('/auth/logout', authenticate, userController.logout);
+
+const requireAdmin = [authenticate, authorize(UserRole.ADMIN)];
+
+/**
+ * @openapi
+ * /admin/users:
+ *   get:
+ *     summary: Get all users (Admin only)
+ *     description: Retrieve a paginated list of all users. Only accessible by admin users.
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: The page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of users per page (max 100)
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [GUEST, WRITER, EDITOR, ADMIN]
+ *         description: Filter users by role
+ *       - in: query
+ *         name: email
+ *         schema:
+ *           type: string
+ *           format: email
+ *         description: Filter users by email (exact match)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term to filter users by name or email (case-insensitive)
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-01-01T00:00:00.000Z"
+ *         description: Filter users created on or after this date (ISO 8601 format)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-12-31T23:59:59.999Z"
+ *         description: Filter users created on or before this date (ISO 8601 format)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [success, message, data]
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Users retrieved successfully"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized - Missing or invalid authentication token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized - Please authenticate"
+ *       403:
+ *         description: Forbidden - User doesn't have admin privileges
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Forbidden - Admin access required"
+ *       500:
+ *         description: Internal server error while retrieving users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error while retrieving users"
+ */
+router.get('/admin/users', requireAdmin, userController.getAllUsers);
+
+/**
+ * @openapi
+ * /admin/users/{userId}:
+ *   patch:
+ *     summary: Update a user's role (Admin only)
+ *     description: Update the role of a specific user. Only accessible by admin users.
+ *     tags: [Admin]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: ObjectId
+ *           example: "507f1f77bcf86cd799439011"
+ *         description: ID of the user to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [role]
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [GUEST, WRITER, EDITOR, ADMIN]
+ *                 example: "EDITOR"
+ *                 description: New role to assign to the user
+ *     responses:
+ *       200:
+ *         description: User role updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [success, message, data]
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User role updated successfully"
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Validation error: 'role' is required"
+ *       401:
+ *         description: Unauthorized - Missing or invalid authentication token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized - Please authenticate"
+ *       403:
+ *         description: Forbidden - User doesn't have admin privileges or invalid role assignment
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Forbidden - Admin access required"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *       500:
+ *         description: Internal server error while updating user role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error while updating user role"
+ */
+router.patch(
+  '/admin/users/:userId/',
+  requireAdmin,
+  validate(updateRoleSchema),
+  userController.updateUserRole,
+);
 
 export default router;
