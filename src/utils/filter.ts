@@ -3,21 +3,8 @@
  * @description Utility functions for handling query filters
  */
 
+import { UserFilters } from '../modules/shared/interfaces/pagination.interface';
 import { UserRole } from '../modules/shared';
-
-/**
- * Interface for user filters
- */
-export interface UserFilters {
-  role?: UserRole;
-  isActive?: boolean;
-  email?: string | RegExp;
-  name?: string | RegExp;
-  createdAt?: {
-    $gte?: Date;
-    $lte?: Date;
-  };
-}
 
 /**
  * Builds a filter object for user queries based on query parameters

@@ -4,7 +4,17 @@
  */
 
 /**
- * User roles enumeration
+ * @swagger
+ * components:
+ *   schemas:
+ *     UserRole:
+ *       type: string
+ *       enum:
+ *         - guest
+ *         - writer
+ *         - editor
+ *         - admin
+ *       description: User roles enumeration defining permissions in the system.
  */
 export enum UserRole {
   GUEST = 'guest',
