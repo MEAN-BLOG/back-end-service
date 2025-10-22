@@ -8,6 +8,7 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { setupSwagger } from './config/swagger';
 import userRoutes from './modules/users/user.routes';
+import articleRoutes from './modules/articles/article.routes';
 
 const app: Express = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 setupSwagger(app);
 
 app.use('/api/v1', userRoutes);
+app.use('/api/v1/articles', articleRoutes);
 
 app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
