@@ -3,28 +3,10 @@
  * @description Utility functions for handling pagination
  */
 
-/**
- * Interface for pagination options
- */
-export interface PaginationOptions {
-  page: number;
-  limit: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-/**
- * Interface for paginated response
- */
-export interface PaginatedResponse<T> {
-  data: T[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+import {
+  PaginatedResponse,
+  PaginationOptions,
+} from '../modules/shared/interfaces/pagination.interface';
 
 /**
  * Applies pagination to a mongoose query
