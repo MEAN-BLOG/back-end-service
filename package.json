@@ -28,7 +28,6 @@
     "version:minor": "npm run changelog:update && npm version minor",
     "version:major": "npm run changelog:update && npm version major",
     "newman": "newman run postman/blog-auth-flow.postman_collection.json -e postman/blog-api.postman_environment.json --reporters cli && newman run postman/blog-admin-flow.postman_collection.json -e postman/blog-api.postman_environment.json --reporters cli"
-
   },
   "keywords": [
     "blog",
