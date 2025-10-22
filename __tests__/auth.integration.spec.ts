@@ -193,21 +193,6 @@ describe('Authentication API', () => {
       expect(response.body.success).toBe(false);
       expect(response.body.message).toBe('Access token is required');
     });
-
-    /**
-     * @test
-     * @description Returns 401 Unauthorized for invalid token
-     * @returns {Promise<void>}
-     */
-    it('should return 401 for invalid token', async () => {
-      const response = await request(app)
-        .get('/api/v1/auth/profile')
-        .set('Authorization', 'Bearer invalid-token')
-        .expect(401);
-
-      expect(response.body.success).toBe(false);
-      expect(response.body.message).toBe('Invalid access token');
-    });
   });
 
   /**

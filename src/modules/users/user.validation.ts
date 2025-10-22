@@ -94,8 +94,6 @@ export const updateProfileSchema = z.object({
  * Role update validation schema (admin only)
  */
 export const updateRoleSchema = z.object({
-  userId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID format'),
-
   role: z
     .enum([UserRole.GUEST, UserRole.WRITER, UserRole.EDITOR, UserRole.ADMIN])
     .refine((val) => Object.values(UserRole).includes(val), {
