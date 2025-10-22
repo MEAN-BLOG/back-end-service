@@ -31,6 +31,7 @@ const {
   JWT_ACCESS_EXPIRY,
   JWT_REFRESH_EXPIRY,
   NODE_ENV,
+  CLIENT_URL,
 } = process.env;
 
 // Validate required environment variables
@@ -45,6 +46,7 @@ const requiredEnvVars = {
   JWT_ACCESS_EXPIRY,
   JWT_REFRESH_EXPIRY,
   NODE_ENV,
+  CLIENT_URL,
 };
 
 const missingVars = Object.entries(requiredEnvVars)
@@ -62,6 +64,7 @@ if (missingVars.length > 0) {
 const serverConfig: TserverConfig = {
   PORT: parseInt(PORT as string, 10) || 5001,
   DevelopmentServer: DevelopmentServer!,
+  CLIENT_URL: CLIENT_URL!,
 };
 
 /**

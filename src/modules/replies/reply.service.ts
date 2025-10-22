@@ -25,9 +25,25 @@ export async function getRepliesByComment(commentId: string) {
     .sort({ createdAt: 1 });
 }
 
-// Get a single reply
+// Get a single reply with populated comment and user details
 export async function getReplyById(id: string) {
-  return Reply.findById(id).populate('userId', 'firstName lastName email');
+  return Reply.findById(id)
+    .populate({
+      path: 'commentId',
+      select: 'user content articleId',
+      populate: [
+        {
+          path: 'user',
+          select: 'username email',
+        },
+        {
+          path: 'articleId',
+          select: 'title',
+        },
+      ],
+    })
+    .populate('userId', 'username email')
+    .lean();
 }
 
 // Update a reply

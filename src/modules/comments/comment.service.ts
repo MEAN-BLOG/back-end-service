@@ -88,10 +88,21 @@ export async function getComments(queryParams: CommentQueryParams = {}) {
 }
 
 /**
- * Get a single comment by ID
+ * Get a single comment by ID with populated article and user details
  */
 export async function getCommentById(id: string) {
-  return Comment.findById(id).populate('userId', 'firstName lastName email').lean();
+  return Comment.findById(id)
+    .populate({
+      path: 'articleId',
+      select: 'author title',
+      populate: {
+        path: 'author',
+        select: 'username email',
+      },
+    })
+    .populate('userId', 'username email')
+    .lean()
+    .exec();
 }
 
 /**
