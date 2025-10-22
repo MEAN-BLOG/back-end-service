@@ -6,8 +6,10 @@
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import commentService from './comment.service';
+import notificationService from '../notifications/notification.service';
 import { UpdateCommentInput } from './comment.validation';
 import { IComment } from '../shared';
+import { NotificationType } from '../../shared/types/notification.types';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -36,12 +38,70 @@ export async function createComment(req: AuthenticatedRequest, res: Response) {
       articleId,
     };
 
+    // Create the comment
     const comment = await commentService.createComment({
       ...commentData,
       articleId: new Types.ObjectId(commentData.articleId),
       userId: new Types.ObjectId(userId),
       content: commentData.content,
     });
+
+    try {
+      // Get the populated comment with article and user details
+      const populatedComment = await commentService.getCommentById(comment.id);
+
+      if (!populatedComment) {
+        console.warn('Comment not found after creation:', comment._id);
+        return;
+      }
+
+      // Type assertion for the populated document
+      type PopulatedComment = {
+        articleId: {
+          _id: Types.ObjectId;
+          title: string;
+          author: Types.ObjectId | { _id: Types.ObjectId; username: string };
+        };
+        content: string;
+        userId: { _id: Types.ObjectId; username: string };
+      };
+
+      const commentData = populatedComment as unknown as PopulatedComment;
+
+      // Extract author ID whether it's populated or just an ObjectId
+      const authorId =
+        commentData.articleId.author instanceof Types.ObjectId
+          ? commentData.articleId.author
+          : commentData.articleId.author._id;
+
+      const currentUserId = userId.toString();
+      const authorIdStr = authorId.toString();
+
+      // Send notification to the article author (if not the same as commenter)
+      if (authorIdStr !== currentUserId) {
+        const articleTitle = commentData.articleId.title || 'your article';
+        const commentPreview =
+          commentData.content.length > 50
+            ? `${commentData.content.substring(0, 50)}...`
+            : commentData.content;
+
+        await notificationService.createAndEmitNotification({
+          userId: authorId,
+          type: NotificationType.NEW_COMMENT,
+          message: `New comment on ${articleTitle}: ${commentPreview}`,
+          referenceId: comment?.id,
+          referenceModel: 'Comment',
+          metadata: {
+            articleId: commentData.articleId._id,
+            articleTitle: commentData.articleId.title,
+            commentAuthor: commentData.userId.username,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      // Don't fail the request if notification fails
+    }
 
     res.status(201).json({
       success: true,
