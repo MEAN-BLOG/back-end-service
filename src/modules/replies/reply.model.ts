@@ -1,6 +1,65 @@
 /**
  * @module modules/replies/reply.model
- * @description Reply schema definition for MongoDB using Mongoose
+ * @description Reply schema definition for MongoDB using Mongoose with OpenAPI documentation
+ * @openapi
+ * components:
+ *   schemas:
+ *     Reply:
+ *       type: object
+ *       required:
+ *         - content
+ *         - userId
+ *         - commentId
+ *       properties:
+ *         _id:
+ *           type: string
+ *           format: ObjectId
+ *           description: The auto-generated ID of the reply
+ *           example: 507f1f77bcf86cd799439011
+ *         content:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 500
+ *           description: The content of the reply
+ *           example: "This is a reply to the comment"
+ *         userId:
+ *           type: string
+ *           format: ObjectId
+ *           description: Reference to the user who created the reply
+ *           example: 507f1f77bcf86cd799439012
+ *         commentId:
+ *           type: string
+ *           format: ObjectId
+ *           description: Reference to the parent comment
+ *           example: 507f1f77bcf86cd799439013
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: The date the reply was created
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: The date the reply was last updated
+ *     CreateReplyInput:
+ *       type: object
+ *       required:
+ *         - content
+ *       properties:
+ *         content:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 500
+ *           description: The content of the reply
+ *           example: "This is a reply to the comment"
+ *     UpdateReplyInput:
+ *       type: object
+ *       properties:
+ *         content:
+ *           type: string
+ *           minLength: 1
+ *           maxLength: 500
+ *           description: The updated content of the reply
+ *           example: "Updated reply content"
  */
 
 import mongoose, { Schema } from 'mongoose';
