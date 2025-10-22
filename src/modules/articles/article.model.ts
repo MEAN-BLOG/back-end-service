@@ -7,7 +7,44 @@ import mongoose, { Schema } from 'mongoose';
 import { IArticle } from '../shared/interfaces/schema.interface';
 
 /**
- * Article schema definition
+ * @swagger
+ * components:
+ *   schemas:
+ *     Article:
+ *       type: object
+ *       required:
+ *         - title
+ *         - content
+ *         - userId
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: The auto-generated ID of the article
+ *         title:
+ *           type: string
+ *           description: The article title
+ *         content:
+ *           type: string
+ *           description: The article content
+ *         image:
+ *           type: string
+ *           description: URL to the article image
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of tags for the article
+ *         userId:
+ *           type: string
+ *           description: ID of the user who created the article
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: The date the article was created
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: The date the article was last updated
  */
 const articleSchema = new Schema<IArticle>(
   {

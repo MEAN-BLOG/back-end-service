@@ -1,8 +1,8 @@
 /**
  * @file abilities.ts
- * @description Centralized CASL (access control) configuration for defining user abilities and permissions
- * across the application. This file defines the rules that determine what actions a user can perform
- * on different subjects (models) based on their role.
+ * @description CASL-based dynamic permissions system for role-based access control.
+ * Provides automatic ID normalization and model type detection for MongoDB documents.
+ * @module abilities
  */
 
 import {
@@ -11,83 +11,121 @@ import {
   ExtractSubjectType,
   MongoAbility,
 } from '@casl/ability';
+import { Types } from 'mongoose';
 import { UserRole } from '../modules/shared/enums/role.enum';
 import { IArticle, IComment, IReply, IUser } from '../modules/shared';
 import { NextFunction, Response } from 'express';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 
 /**
- * Supported actions that can be performed by users.
+ * Available permission actions in the system.
+ * @typedef {('manage'|'create'|'read'|'update'|'delete')} Actions
  */
 export type Actions = 'manage' | 'create' | 'read' | 'update' | 'delete';
 
 /**
- * Supported subject names that map to application models.
+ * String representation of model types for CASL subject detection.
+ * @typedef {('Article'|'Comment'|'User'|'Reply'|'all')} SubjectTypeName
  */
 export type SubjectTypeName = 'Article' | 'Comment' | 'User' | 'Reply' | 'all';
 
 /**
- * Union type for all model interfaces used as permission subjects.
+ * Union type of all model interfaces in the system.
+ * @typedef {(IArticle|IComment|IUser|IReply)} ModelType
  */
 export type ModelType = IArticle | IComment | IUser | IReply;
 
 /**
- * Combined subject types accepted by CASL — either a model name or an actual model instance.
+ * Valid CASL subject types, can be either a string name or a model instance.
+ * @typedef {(SubjectTypeName|ModelType)} SubjectTypes
  */
 export type SubjectTypes = SubjectTypeName | ModelType;
 
 /**
- * CASL ability type used throughout the app.
+ * CASL ability instance with typed actions and subjects.
+ * @typedef {MongoAbility<[Actions, SubjectTypes]>} AppAbility
  */
 export type AppAbility = MongoAbility<[Actions, SubjectTypes]>;
 
 /**
- * Determines the subject type (model name) for a given model instance or string.
+ * Normalizes Mongoose documents by converting ObjectIds to strings and ensuring
+ * the baseModelName property exists for CASL subject type detection.
  *
- * @param item - The model instance or string representing a subject.
- * @returns The extracted subject type (e.g., `'Article'`, `'User'`, `'all'`).
+ * @param {any} doc - The document to normalize (can be a Mongoose document or plain object)
+ * @returns {any} Normalized document with string IDs and baseModelName property
+ *
+ * @example
+ * const doc = { _id: new ObjectId('...'), userId: new ObjectId('...') };
+ * const normalized = normalizeDocument(doc);
+ * // Returns: { _id: '...', userId: '...', baseModelName: 'Article' }
  */
-function getModelName(item: ModelType): ExtractSubjectType<SubjectTypes> {
-  if (!item) return 'all';
+function normalizeDocument(doc: any): any {
+  if (!doc || typeof doc !== 'object') return doc;
 
-  if (typeof item === 'string') return item;
+  const copy = { ...doc };
 
-  if (item.baseModelName) return item.baseModelName as ExtractSubjectType<SubjectTypes>;
+  if (copy._id && Types.ObjectId.isValid(copy._id)) copy._id = copy._id.toString();
+  if (copy.userId && Types.ObjectId.isValid(copy.userId)) copy.userId = copy.userId.toString();
 
-  return 'all';
+  // Determine model name for CASL
+  copy.baseModelName =
+    copy.baseModelName ?? copy.constructor?.modelName ?? copy.constructor?.name ?? 'element';
+
+  return copy;
 }
 
 /**
- * Defines the abilities (permissions) for a specific user based on their assigned role.
+ * Extracts the model name from a subject for CASL type detection.
  *
- * @param user - The user whose abilities are being defined.
- * @returns A CASL `AppAbility` instance containing the user's permissions.
+ * @param {ModelType|string} item - The subject item (model instance or string)
+ * @returns {ExtractSubjectType<SubjectTypes>} The extracted subject type name
  *
  * @example
- * ```ts
- * const userAbility = defineAbilitiesFor(currentUser);
- * if (userAbility.can('delete', 'Article')) {
- *   // Allow deletion
- * }
- * ```
+ * getModelName('Article'); // Returns: 'Article'
+ * getModelName(articleInstance); // Returns: 'Article' (from baseModelName)
+ * getModelName(null); // Returns: 'all'
+ */
+function getModelName(item: ModelType | string): ExtractSubjectType<SubjectTypes> {
+  if (!item) return 'all';
+  if (typeof item === 'string') return item as ExtractSubjectType<SubjectTypes>;
+  return (item.baseModelName as ExtractSubjectType<SubjectTypes>) || 'all';
+}
+
+/**
+ * Defines CASL abilities for a user based on their role.
+ * Configures permissions hierarchy: Guest < Writer < Editor < Admin.
+ *
+ * @param {IUser} user - The user for whom to define abilities
+ * @returns {AppAbility} Configured CASL ability instance
+ *
+ * @description
+ * Permission levels:
+ * - **Guest**: Read articles/comments, create/update/delete own comments
+ * - **Writer**: Guest permissions + create/update/delete own articles
+ * - **Editor**: Manage all articles and comments (cannot delete users)
+ * - **Admin**: Full system access (manage all resources)
+ *
+ * @example
+ * const user = { _id: '123', role: UserRole.WRITER };
+ * const ability = defineAbilitiesFor(user);
+ * ability.can('update', 'Article'); // true for own articles
  */
 export function defineAbilitiesFor(user: IUser): AppAbility {
   const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-  /** Default guest permissions */
+  /** Guest permissions */
   can('read', 'Article');
   can('read', 'Comment');
   can('create', 'Comment');
   can('create', 'Reply');
+  can('update', 'Comment', { userId: String(user?._id) });
+  can('delete', 'Comment', { userId: String(user?._id) });
 
-  /** Writer-specific permissions */
+  /** Writer permissions */
   if (user.role === UserRole.WRITER) {
     can('create', 'Article');
-    can('update', 'Article', { userId: user._id });
-    can('delete', 'Article', { userId: user._id });
-    can('create', 'Comment');
-    can('update', 'Comment', { userId: user._id });
-    can('delete', 'Comment', { userId: user._id });
+    can('update', 'Article', { userId: String(user?._id) });
+    can('delete', 'Article', { userId: String(user?._id) });
   }
 
   /** Editor permissions */
@@ -97,100 +135,95 @@ export function defineAbilitiesFor(user: IUser): AppAbility {
     cannot('delete', 'User');
   }
 
-  /** Admin permissions (full access) */
+  /** Admin permissions */
   if (user.role === UserRole.ADMIN) {
     can('manage', 'all');
   }
 
-  /** Build and return the CASL ability */
   return build({
-    detectSubjectType: (subject): ExtractSubjectType<SubjectTypes> => {
-      if (subject.baseModelName === 'all') return 'all';
-      const modelName = getModelName(subject);
-      return modelName || (subject.constructor?.name as ExtractSubjectType<SubjectTypes>) || 'all';
-    },
+    detectSubjectType: (subject) => getModelName(subject),
   });
 }
 
 /**
- * Creates a CASL ability instance for a given user.
+ * Creates a CASL ability instance for a specific user.
+ * Convenience wrapper around {@link defineAbilitiesFor}.
  *
- * @param user - The user whose ability should be generated.
- * @returns The constructed `AppAbility` instance.
+ * @param {IUser} user - The user for whom to create abilities
+ * @returns {AppAbility} Configured CASL ability instance
  *
  * @example
- * ```ts
- * const ability = createAbilityForUser(user);
- * if (ability.can('update', 'Article')) {
- *   // Allow edit
+ * const ability = createAbilityForUser(req.user);
+ * if (ability.can('delete', article)) {
+ *   await article.remove();
  * }
- * ```
  */
 export function createAbilityForUser(user: IUser): AppAbility {
   return defineAbilitiesFor(user);
 }
 
 /**
- * Determines whether a user can perform a given action on a subject.
+ * Express middleware for checking user permissions on specific resources.
+ * Automatically normalizes subjects and validates access based on user abilities.
  *
- * @param user - The user whose permissions are being evaluated.
- * @param action - The action to check (e.g., `'create'`, `'delete'`).
- * @param subject - The subject (model or string) to act upon.
- * @param field - Optional specific field within the subject.
- * @returns `true` if the user can perform the action; otherwise `false`.
+ * @param {Actions} action - The action to check permission for (e.g., 'read', 'update')
+ * @param {Function} [getSubject] - Optional function to retrieve the subject from the request
+ * @returns {Function} Express middleware function
  *
- * @example
- * ```ts
- * if (canUser(user, 'delete', 'Comment')) {
- *   // Allow comment deletion
- * }
- * ```
- */
-export function canUser(
-  user: IUser | undefined | null,
-  action: Actions,
-  subject: SubjectTypes,
-  field?: string,
-): boolean {
-  if (!user) return false;
-
-  const ability = createAbilityForUser(user);
-  return field ? ability.can(action, subject, field) : ability.can(action, subject);
-}
-
-/**
- * Express middleware that checks if the authenticated user has permission
- * to perform a specific action on a given subject.
- *
- * @param action - The action to authorize (e.g., `'read'`, `'update'`, `'delete'`).
- * @param getSubject - Optional function to dynamically resolve the subject from the request.
- * @returns Express middleware that validates permissions.
+ * @throws {401} When user is not authenticated
+ * @throws {403} When user lacks permission for the action
  *
  * @example
- * ```ts
- * // Example usage in a route:
+ * // Check permission on a specific article
  * router.delete(
  *   '/articles/:id',
- *   authenticate,
- *   checkPermission('delete', req => ({ _id: req.params.id, baseModelName: 'Article' })),
- *   articleController.deleteArticle
+ *   checkPermission('delete', async (req) => {
+ *     return await Article.findById(req.params.id);
+ *   })
  * );
- * ```
+ *
+ * @example
+ * // Check general permission without specific subject
+ * router.post(
+ *   '/articles',
+ *   checkPermission('create', () => 'Article')
+ * );
  */
 export function checkPermission(
   action: Actions,
-  getSubject?: (req: AuthenticatedRequest) => SubjectTypes,
+  getSubject?: (req?: AuthenticatedRequest) => SubjectTypes | Promise<SubjectTypes>,
 ) {
-  return (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+  return async (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
     if (!req.user) {
-      return next(new Error('User not authenticated'));
+      return _res.status(401).json({ success: false, message: 'User not authenticated' });
     }
 
-    const subject = getSubject ? getSubject(req) : 'all';
-    if (!canUser(req.user, action, subject)) {
-      return next(new Error('Forbidden'));
-    }
+    try {
+      let subject = getSubject ? await getSubject(req) : 'all';
 
-    next();
+      if (typeof subject === 'object' && subject !== null) {
+        if ('toObject' in subject && typeof subject.toObject === 'function') {
+          subject = normalizeDocument(subject.toObject());
+        } else {
+          subject = normalizeDocument(subject);
+        }
+      }
+
+      const ability = createAbilityForUser(req.user);
+      const subjectName =
+        typeof subject === 'string' ? subject : (subject.baseModelName ?? 'element');
+      const subjectId = typeof subject === 'string' ? '' : subject._id ? ` (${subject.id})` : '';
+
+      if (!ability.can(action, subject)) {
+        return _res.status(403).json({
+          success: false,
+          message: `You are not allowed to ${action} this ${subjectName}${subjectId}`,
+        });
+      }
+
+      next();
+    } catch (err) {
+      next(err);
+    }
   };
 }
