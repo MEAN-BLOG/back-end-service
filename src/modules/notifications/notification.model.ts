@@ -4,8 +4,7 @@
  */
 
 import mongoose, { Schema } from 'mongoose';
-import { INotification } from '../shared/interfaces/schema.interface';
-import { NotificationType } from '../shared/enums/notification-type.enum';
+import { NotificationType, INotification } from '../shared/';
 
 /**
  * Notification schema definition
