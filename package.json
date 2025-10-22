@@ -1,6 +1,6 @@
 {
   "name": "blog-back-end-service",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Backend service for a collaborative multi-author blog platform using Node.js, Express, TypeScript, and MongoDB. Supports JWT authentication, role-based permissions, real-time comments, and notifications.",
   "main": "dist/server.js",
   "_moduleAliases": {
