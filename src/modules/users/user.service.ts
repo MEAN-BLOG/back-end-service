@@ -5,9 +5,9 @@
 
 import { FilterQuery, Types } from 'mongoose';
 import { UserRole } from '../shared/enums/role.enum';
-import { PaginationOptions } from '../../utils/paginate';
 import { IUser } from '../shared';
 import userSchema from './user.model';
+import { PaginationOptions } from '../shared/interfaces/pagination.interface';
 
 /**
  * Interface for user query parameters
