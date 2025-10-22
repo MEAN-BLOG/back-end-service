@@ -1,6 +1,6 @@
 {
   "name": "blog-back-end-service",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Backend service for a collaborative multi-author blog platform using Node.js, Express, TypeScript, and MongoDB. Supports JWT authentication, role-based permissions, real-time comments, and notifications.",
   "main": "dist/server.js",
   "_moduleAliases": {
@@ -27,7 +27,8 @@
     "version:patch": "npm run changelog:update && npm version patch",
     "version:minor": "npm run changelog:update && npm version minor",
     "version:major": "npm run changelog:update && npm version major",
-    "newman": "newman run postman/blog-auth-flow.postman_collection.json -e postman/blog-api.postman_environment.json   --reporters cli,json   --reporter-json-export newman-report.json"
+    "newman": "newman run postman/blog-auth-flow.postman_collection.json -e postman/blog-api.postman_environment.json --reporters cli && newman run postman/blog-admin-flow.postman_collection.json -e postman/blog-api.postman_environment.json --reporters cli"
+
   },
   "keywords": [
     "blog",
@@ -74,7 +75,11 @@
     "supertest": "^7.1.4",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@casl/ability": "^6.4.0",
+    "@casl/mongoose": "^8.0.3",
+    "@casl/react": "^3.1.0",
+    "@casl/vue": "^2.2.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
