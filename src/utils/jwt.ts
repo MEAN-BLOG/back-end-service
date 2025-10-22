@@ -6,6 +6,7 @@
 import { enirementVariables } from '../config/environment';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { Types } from 'mongoose';
+import { ForbiddenError } from './errors';
 
 /**
  * JWT payload interface
@@ -124,19 +125,19 @@ export async function verifyAccessToken(token: string): Promise<JWTPayload> {
     return decoded;
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      throw new Error('Access token expired');
+      throw new ForbiddenError('Access token expired');
     }
     if (error instanceof Error && error.message === 'jwt expired') {
-      throw new Error('Access token expired');
+      throw new ForbiddenError('Access token expired');
     }
     if (error instanceof Error && error.message === 'Invalid token type') {
       throw error;
     }
     if (error instanceof Error && error.message.includes('jwt malformed')) {
-      throw new Error('Invalid access token: Invalid token format');
+      throw new ForbiddenError('Invalid access token: Invalid token format');
     }
     if (error instanceof Error && error.message.includes('invalid signature')) {
-      throw new Error('Invalid access token: Invalid signature');
+      throw new ForbiddenError('Invalid access token: Invalid signature');
     }
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     throw new Error(`Invalid access token: ${errorMessage}`);
