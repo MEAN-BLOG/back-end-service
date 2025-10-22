@@ -19,7 +19,7 @@ jobs:
       JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
       JWT_ACCESS_EXPIRY: ${{ secrets.JWT_ACCESS_EXPIRY }}
       JWT_REFRESH_EXPIRY: ${{ secrets.JWT_REFRESH_EXPIRY }}
-
+      CLIENT_URL: ${{secrets.CLIENT_URL}}
     steps:
       - name: ⬇️ Checkout code
         uses: actions/checkout@v4
