@@ -18,6 +18,20 @@ import {
 const router = Router();
 
 /**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: Authentication module management
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: Admin module management
+ */
+
+/**
  * @openapi
  * /auth/register:
  *   post:
