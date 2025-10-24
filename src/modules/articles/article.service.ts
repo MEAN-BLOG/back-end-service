@@ -19,7 +19,7 @@ export interface ArticleQueryParams {
 /**
  * Get all articles with optional filtering and pagination
  */
-export async function getArticles(queryParams: ArticleQueryParams = {}) {
+export async function getArticles(queryParams: ArticleQueryParams = {}, userId?: string) {
   const { page = 1, limit = 10, ...filters } = queryParams;
   const skip = (page - 1) * limit;
 
@@ -39,7 +39,10 @@ export async function getArticles(queryParams: ArticleQueryParams = {}) {
       { content: { $regex: filters.search, $options: 'i' } },
     ];
   }
-
+  console.log(userId, 'userId');
+  if (userId) {
+    query.userId = new Types.ObjectId(userId);
+  }
   const [articles, total] = await Promise.all([
     Article.find(query)
       .populate('author', 'username email firstName lastName')
@@ -65,7 +68,17 @@ export async function getArticles(queryParams: ArticleQueryParams = {}) {
  * Get a single article by ID
  */
 export async function getArticleById(id: string) {
-  return Article.findById(id).populate('author', 'username email').lean();
+  return Article.findById(id)
+    .populate('author', 'fullName firstName lastName email')
+    .populate({
+      path: 'commentIds',
+      select: 'content userId createdAt updatedAt',
+      populate: {
+        path: 'userId',
+        select: 'username email fullName',
+      },
+    })
+    .lean();
 }
 
 /**

@@ -123,6 +123,61 @@ router.get('/', articleController.getArticles);
 
 /**
  * @swagger
+ * /articles/my-articles:
+ *   get:
+ *     summary: Get all articles created by the authenticated user
+ *     description: Returns a list of articles authored by the currently authenticated user.
+ *     tags: [Articles]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of articles per page (max 100)
+ *     responses:
+ *       200:
+ *         description: List of user's own articles retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginationResponse'
+ *             example:
+ *               data:
+ *                 - _id: "507f1f77bcf86cd799439011"
+ *                   title: "My TypeScript Journey"
+ *                   content: "I started learning TypeScript two years ago..."
+ *                   image: "https://example.com/images/mine.jpg"
+ *                   tags: ["typescript", "learning"]
+ *                   userId: "507f1f77bcf86cd799439011"
+ *                   commentIds: []
+ *                   createdAt: "2023-10-22T10:30:00.000Z"
+ *                   updatedAt: "2023-10-22T10:30:00.000Z"
+ *               pagination:
+ *                 total: 1
+ *                 page: 1
+ *                 limit: 10
+ *                 totalPages: 1
+ *       401:
+ *         description: Unauthorized - Authentication token missing or invalid
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/my-articles', authenticate, articleController.getMyArticles);
+
+/**
+ * @swagger
  * /articles/{id}:
  *   get:
  *     summary: Get a single article by ID
