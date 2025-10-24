@@ -27,7 +27,7 @@ export type Actions = 'manage' | 'create' | 'read' | 'update' | 'delete';
  * String representation of model types for CASL subject detection.
  * @typedef {('Article'|'Comment'|'User'|'Reply'|'all')} SubjectTypeName
  */
-export type SubjectTypeName = 'Article' | 'Comment' | 'User' | 'Reply' | 'all';
+export type SubjectTypeName = 'Article' | 'Comment' | 'User' | 'Reply' | 'Statistics' | 'all';
 
 /**
  * Union type of all model interfaces in the system.
@@ -138,6 +138,7 @@ export function defineAbilitiesFor(user: IUser): AppAbility {
   /** Admin permissions */
   if (user.role === UserRole.ADMIN) {
     can('manage', 'all');
+    can('read', 'Statistics');
   }
 
   return build({

@@ -177,10 +177,51 @@ export async function deleteArticle(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+/**
+ * Get all articles created by the authenticated user
+ * @route GET /api/articles/my-articles
+ * @access Private (Authenticated users)
+ */
+export async function getMyArticles(req: AuthenticatedRequest, res: Response) {
+  try {
+    console.log(req.user, 'req.user');
+    const userId = req.user?.id?.toString();
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      });
+    }
+
+    const queryParams: ArticleQueryParams = {
+      ...req.query,
+      page: Number.parseInt(req.query.page as string) || 1,
+      limit: Math.min(Number.parseInt(req.query.limit as string) || 10, 100),
+    };
+
+    const result = await articleService.getArticles(queryParams, userId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Your articles retrieved successfully',
+      data: result.data,
+      pagination: result.pagination,
+    });
+  } catch (error) {
+    console.error('Error getting user articles:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve your articles',
+    });
+  }
+}
+
 export default {
   getArticles,
   getArticleById,
   createArticle,
   updateArticle,
   deleteArticle,
+  getMyArticles,
 };
