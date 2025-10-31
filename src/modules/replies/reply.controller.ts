@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import replyService from './reply.service';
 import notificationService from '../notifications/notification.service';
-import { NotificationType } from '../../shared/types/notification.types';
+import { IUser, NotificationType } from '../shared';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -48,25 +48,18 @@ export async function createReply(req: AuthenticatedRequest, res: Response) {
         commentId: {
           _id: Types.ObjectId;
           content: string;
-          user: Types.ObjectId | { _id: Types.ObjectId; username: string };
-          articleId: { _id: Types.ObjectId; title: string } | Types.ObjectId;
+          userId: IUser;
+          articleId: { _id: Types.ObjectId; title: string; userId: IUser };
         };
         content: string;
-        userId: { _id: Types.ObjectId; username: string };
+        userId: IUser;
       };
 
       const replyData = populatedReply as unknown as PopulatedReply;
-
-      // Extract comment author ID whether it's populated or just an ObjectId
-      const commentAuthorId =
-        replyData.commentId.user instanceof Types.ObjectId
-          ? replyData.commentId.user.toString()
-          : replyData.commentId.user._id.toString();
-
+      const commentAuthorUser =(replyData.commentId?.articleId?.userId) as IUser;
       const currentUserId = userId.toString();
-
-      // Send notification to the comment author (if not the same as replier)
-      if (commentAuthorId !== currentUserId) {
+      console.log("commentAuthorUser", commentAuthorUser, "currentUserId", currentUserId?.toString())
+      if (commentAuthorUser?._id?.toString() !== currentUserId) {
         const commentPreview =
           replyData.commentId.content.length > 30
             ? `${replyData.commentId.content.substring(0, 30)}...`
@@ -83,16 +76,15 @@ export async function createReply(req: AuthenticatedRequest, res: Response) {
             : replyData.commentId.articleId.title || 'an article';
 
         await notificationService.createAndEmitNotification({
-          userId: new Types.ObjectId(commentAuthorId),
-          type: NotificationType.NEW_REPLY,
+          userId: new Types.ObjectId(commentAuthorUser?._id?.toString()),
+          type: NotificationType.REPLY,
           message: `New reply to your comment on ${articleTitle}: "${commentPreview}"`,
-          referenceId: reply.id,
+          referenceId: reply.commentId,
           referenceModel: 'Reply',
           metadata: {
-            commentId: replyData.commentId._id,
-            articleId: articleId,
-            articleTitle: typeof articleTitle === 'string' ? articleTitle : 'an article',
-            replyAuthor: replyData.userId.username,
+            articleId: replyData.commentId?.articleId?._id,
+            articleTitle: articleTitle,
+            commentAuthor: replyData.userId?.firstName,
           },
         });
       }
@@ -127,9 +119,8 @@ export async function createReply(req: AuthenticatedRequest, res: Response) {
 export async function getRepliesByComment(req: Request, res: Response) {
   const { commentId } = req.params;
   const replies = await replyService.getRepliesByComment(commentId);
-
   res.status(200).json({
-    success: true,
+    success: replies.length > 0,
     data: replies,
   });
 }
@@ -142,6 +133,9 @@ export async function getRepliesByComment(req: Request, res: Response) {
  */
 export async function getReply(req: Request, res: Response) {
   const { id } = req.params;
+  if (!Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid reply ID format' });
+  }
   const reply = await replyService.getReplyById(id);
 
   if (!reply) {

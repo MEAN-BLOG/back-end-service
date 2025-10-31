@@ -96,12 +96,11 @@ export async function getCommentById(id: string) {
       path: 'articleId',
       select: 'author title',
       populate: {
-        path: 'author',
-        select: 'username email',
+        path: 'userId',
+        select: 'userName email firstName lastName',
       },
     })
-    .populate('userId', 'username email')
-    .lean()
+    .populate('userId', 'firstName lastName userName email')
     .exec();
 }
 

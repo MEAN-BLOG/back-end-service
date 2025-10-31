@@ -184,7 +184,6 @@ export async function deleteArticle(req: AuthenticatedRequest, res: Response) {
  */
 export async function getMyArticles(req: AuthenticatedRequest, res: Response) {
   try {
-    console.log(req.user, 'req.user');
     const userId = req.user?.id?.toString();
 
     if (!userId) {

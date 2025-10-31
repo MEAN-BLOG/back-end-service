@@ -106,7 +106,7 @@ const articleSchema = new Schema<IArticle>(
  * Virtual for comment count
  */
 articleSchema.virtual('commentCount').get(function () {
-  return this.commentIds.length;
+  return Array.isArray(this.commentIds) ? this.commentIds.length : 0;
 });
 
 /**

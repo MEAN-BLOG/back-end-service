@@ -1,14 +1,5 @@
+import { NotificationType } from '@/modules/shared';
 import { Types } from 'mongoose';
-
-export enum NotificationType {
-  NEW_COMMENT = 'NEW_COMMENT',
-  NEW_REPLY = 'NEW_REPLY',
-  COMMENT_LIKED = 'COMMENT_LIKED',
-  REPLY_LIKED = 'REPLY_LIKED',
-  ARTICLE_PUBLISHED = 'ARTICLE_PUBLISHED',
-  MENTION = 'MENTION',
-  SYSTEM = 'SYSTEM',
-}
 
 export interface INotification {
   userId: Types.ObjectId;

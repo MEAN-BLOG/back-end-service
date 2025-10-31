@@ -38,6 +38,10 @@ const notificationSchema = new Schema<INotification>(
       type: Boolean,
       default: false,
     },
+    metadata: {
+      type: Map,
+      of: String,
+    },
   },
   {
     timestamps: true,

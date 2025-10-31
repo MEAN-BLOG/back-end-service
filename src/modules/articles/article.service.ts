@@ -39,7 +39,6 @@ export async function getArticles(queryParams: ArticleQueryParams = {}, userId?:
       { content: { $regex: filters.search, $options: 'i' } },
     ];
   }
-  console.log(userId, 'userId');
   if (userId) {
     query.userId = new Types.ObjectId(userId);
   }
@@ -75,7 +74,7 @@ export async function getArticleById(id: string) {
       select: 'content userId createdAt updatedAt',
       populate: {
         path: 'userId',
-        select: 'username email fullName',
+        select: 'firstName lastName email fullName',
       },
     })
     .lean();

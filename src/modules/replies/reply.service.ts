@@ -30,21 +30,26 @@ export async function getReplyById(id: string) {
   return Reply.findById(id)
     .populate({
       path: 'commentId',
-      select: 'user content articleId',
+      select: 'userId content articleId',
       populate: [
         {
-          path: 'user',
-          select: 'username email',
+          path: 'userId',
+          select: 'fullName firstName lastName email',
         },
         {
           path: 'articleId',
-          select: 'title',
+          select: 'title content userId image tags createdAt',
+          populate: {
+            path: 'userId',
+            select: 'fullName firstName lastName email',
+          },
         },
       ],
     })
-    .populate('userId', 'username email')
+    .populate('userId', 'fullName firstName lastName email')
     .lean();
 }
+
 
 // Update a reply
 export async function updateReply(id: string, content: string) {

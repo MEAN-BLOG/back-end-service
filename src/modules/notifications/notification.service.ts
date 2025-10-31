@@ -3,9 +3,9 @@ import { Types } from 'mongoose';
 import Notification from './notification.model';
 import {
   CreateNotificationDto,
-  NotificationType,
   INotification as INotificationType,
 } from '../../shared/types/notification.types';
+import { NotificationType } from '../shared';
 
 class NotificationService {
   private io: SocketIOServer | null = null;
@@ -25,16 +25,12 @@ class NotificationService {
     if (!this.io) return;
 
     this.io.on('connection', (socket) => {
-      console.log(`New client connected: ${socket.id}`);
-
-      // Join user's room for private notifications
       socket.on('join', (userId: string) => {
         socket.join(`user_${userId}`);
-        console.log(`User ${userId} joined their notification room`);
       });
 
       socket.on('disconnect', () => {
-        console.log(`Client disconnected: ${socket.id}`);
+        console.info(`Client disconnected: ${socket.id}`);
       });
     });
   }
@@ -71,8 +67,6 @@ class NotificationService {
         updatedAt: notification.updatedAt,
         type: createDto.type,
       };
-
-      // Emit the notification to the user
       this.emitNotification(notificationToEmit);
 
       return notificationToEmit;
@@ -85,21 +79,20 @@ class NotificationService {
   /**
    * Emit a notification to a specific user via Socket.IO
    */
-  private emitNotification(notification: INotificationType): void {
-    if (!this.io) {
-      console.warn('Socket.IO server not initialized. Notification not emitted.');
-      return;
-    }
-
-    // Ensure userId is a string for the room name
-    const userId =
-      typeof notification.userId === 'string'
-        ? notification.userId
-        : notification.userId.toString();
-
-    // Emit to the specific user's room
-    this.io.to(`user_${userId}`).emit('new_notification', notification);
+private emitNotification(notification: INotificationType): void {
+  if (!this.io) {
+    console.warn('Socket.IO server not initialized. Notification not emitted.');
+    return;
   }
+
+  const userId =
+    typeof notification.userId === 'string'
+      ? notification.userId
+      : notification.userId.toString();
+
+  this.io.to(`user_${userId}`).emit('new_notification', notification);
+  console.log("send notificaition with socket to user", userId, "as notification", notification)
+}
 
   /**
    * Get user notifications with pagination and filters
@@ -146,6 +139,12 @@ class NotificationService {
       userId: new Types.ObjectId(notification.userId),
       referenceId: new Types.ObjectId(notification.referenceId),
     }));
+  }
+
+  public async markNotificationAsSeen(notificaitionId:string) {
+    return await Notification.findByIdAndUpdate(notificaitionId, {
+      read: true
+    }, {new: true}).exec()
   }
 }
 

@@ -235,4 +235,5 @@ export interface INotification extends Document {
   read: boolean;
   createdAt: Date;
   updatedAt: Date;
+  metadata?: Map<string, string>;
 }

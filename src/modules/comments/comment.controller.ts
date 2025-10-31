@@ -8,8 +8,7 @@ import { Types } from 'mongoose';
 import commentService from './comment.service';
 import notificationService from '../notifications/notification.service';
 import { UpdateCommentInput } from './comment.validation';
-import { IComment } from '../shared';
-import { NotificationType } from '../../shared/types/notification.types';
+import { IComment, NotificationType } from '../shared';
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -25,7 +24,6 @@ export async function createComment(req: AuthenticatedRequest, res: Response) {
   try {
     const { articleId } = req.params;
     const userId = req.user?._id;
-
     if (!userId) {
       return res.status(401).json({
         success: false,
@@ -60,26 +58,20 @@ export async function createComment(req: AuthenticatedRequest, res: Response) {
         articleId: {
           _id: Types.ObjectId;
           title: string;
-          author: Types.ObjectId | { _id: Types.ObjectId; username: string };
+          userId: Types.ObjectId | { _id: Types.ObjectId; username: string };
         };
         content: string;
         userId: { _id: Types.ObjectId; username: string };
       };
 
       const commentData = populatedComment as unknown as PopulatedComment;
-
-      // Extract author ID whether it's populated or just an ObjectId
-      const authorId =
-        commentData.articleId.author instanceof Types.ObjectId
-          ? commentData.articleId.author
-          : commentData.articleId.author._id;
-
       const currentUserId = userId.toString();
-      const authorIdStr = authorId.toString();
 
-      // Send notification to the article author (if not the same as commenter)
-      if (authorIdStr !== currentUserId) {
-        const articleTitle = commentData.articleId.title || 'your article';
+      const authorObj = commentData.articleId?.userId;
+      const authorId = authorObj instanceof Types.ObjectId ? authorObj : authorObj?._id;
+
+      if (authorId && authorId.toString() !== currentUserId) {
+        const articleTitle = commentData.articleId?.title || 'your article';
         const commentPreview =
           commentData.content.length > 50
             ? `${commentData.content.substring(0, 50)}...`
@@ -87,20 +79,19 @@ export async function createComment(req: AuthenticatedRequest, res: Response) {
 
         await notificationService.createAndEmitNotification({
           userId: authorId,
-          type: NotificationType.NEW_COMMENT,
+          type: NotificationType.COMMENT,
           message: `New comment on ${articleTitle}: ${commentPreview}`,
           referenceId: comment?.id,
           referenceModel: 'Comment',
           metadata: {
-            articleId: commentData.articleId._id,
-            articleTitle: commentData.articleId.title,
-            commentAuthor: commentData.userId.username,
+            articleId: commentData.articleId?._id,
+            articleTitle: commentData.articleId?.title,
+            commentAuthor: commentData.userId?.username,
           },
         });
       }
     } catch (error) {
       console.error('Error sending notification:', error);
-      // Don't fail the request if notification fails
     }
 
     res.status(201).json({
