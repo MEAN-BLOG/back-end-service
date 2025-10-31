@@ -14,7 +14,6 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-
 /**
  * Get all notifications with optional filtering and pagination
  */
@@ -25,10 +24,8 @@ export async function getNotifications(req: Request, res: Response) {
     const filters = {
       page: Number.parseInt(page as string, 10),
       limit: Math.min(Number.parseInt(limit as string, 10), 100),
-    }
-    const items = await notificationService.getNotifications(
-        user._id,
-        filters);
+    };
+    const items = await notificationService.getNotifications(user._id, filters);
 
     res.status(200).json({
       success: true,
@@ -80,7 +77,6 @@ export async function markNotificationAsSeen(req: Request, res: Response) {
     });
   }
 }
-
 
 export default {
   getNotifications,

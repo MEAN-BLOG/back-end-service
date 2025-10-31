@@ -79,20 +79,20 @@ class NotificationService {
   /**
    * Emit a notification to a specific user via Socket.IO
    */
-private emitNotification(notification: INotificationType): void {
-  if (!this.io) {
-    console.warn('Socket.IO server not initialized. Notification not emitted.');
-    return;
+  private emitNotification(notification: INotificationType): void {
+    if (!this.io) {
+      console.warn('Socket.IO server not initialized. Notification not emitted.');
+      return;
+    }
+
+    const userId =
+      typeof notification.userId === 'string'
+        ? notification.userId
+        : notification.userId.toString();
+
+    this.io.to(`user_${userId}`).emit('new_notification', notification);
+    console.log('send notificaition with socket to user', userId, 'as notification', notification);
   }
-
-  const userId =
-    typeof notification.userId === 'string'
-      ? notification.userId
-      : notification.userId.toString();
-
-  this.io.to(`user_${userId}`).emit('new_notification', notification);
-  console.log("send notificaition with socket to user", userId, "as notification", notification)
-}
 
   /**
    * Get user notifications with pagination and filters
@@ -141,10 +141,14 @@ private emitNotification(notification: INotificationType): void {
     }));
   }
 
-  public async markNotificationAsSeen(notificaitionId:string) {
-    return await Notification.findByIdAndUpdate(notificaitionId, {
-      read: true
-    }, {new: true}).exec()
+  public async markNotificationAsSeen(notificaitionId: string) {
+    return await Notification.findByIdAndUpdate(
+      notificaitionId,
+      {
+        read: true,
+      },
+      { new: true },
+    ).exec();
   }
 }
 

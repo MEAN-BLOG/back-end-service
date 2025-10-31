@@ -13,7 +13,7 @@ import commentRoutes from './modules/comments/comment.routes';
 import replyRoutes from './modules/replies/reply.routes';
 import StatisticsRoutes from './modules/statistics/statistics.route';
 import NotificationRoutes from './modules/notifications/notification.routes';
-import {version} from "../package.json"
+import { version } from '../package.json';
 const app: Express = express();
 
 app.use(cors());
@@ -37,7 +37,7 @@ app.get('/', (_req: Request, res: Response) => {
       comments: '/api/v1/comments',
       replies: '/api/v1/replies',
       statistics: '/api/v1/statistics',
-      notifications: '/api/v1/notifications'
+      notifications: '/api/v1/notifications',
     },
   });
 });

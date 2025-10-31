@@ -144,11 +144,7 @@ const router = Router();
  *               status: 'error'
  *               message: 'An unexpected error occurred'
  */
-router.get(
-  '/',
-  authenticate,
-  notificationController.getNotifications
-);
+router.get('/', authenticate, notificationController.getNotifications);
 
 /**
  * @openapi
@@ -224,7 +220,7 @@ router.patch(
   '/:id',
   authenticate,
   checkPermission('update', () => 'Notification'),
-  notificationController.markNotificationAsSeen
+  notificationController.markNotificationAsSeen,
 );
 
 export default router;

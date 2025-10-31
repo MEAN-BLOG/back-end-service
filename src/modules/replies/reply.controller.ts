@@ -56,9 +56,14 @@ export async function createReply(req: AuthenticatedRequest, res: Response) {
       };
 
       const replyData = populatedReply as unknown as PopulatedReply;
-      const commentAuthorUser =(replyData.commentId?.articleId?.userId) as IUser;
+      const commentAuthorUser = replyData.commentId?.articleId?.userId as IUser;
       const currentUserId = userId.toString();
-      console.log("commentAuthorUser", commentAuthorUser, "currentUserId", currentUserId?.toString())
+      console.log(
+        'commentAuthorUser',
+        commentAuthorUser,
+        'currentUserId',
+        currentUserId?.toString(),
+      );
       if (commentAuthorUser?._id?.toString() !== currentUserId) {
         const commentPreview =
           replyData.commentId.content.length > 30

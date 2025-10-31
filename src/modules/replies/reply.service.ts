@@ -50,7 +50,6 @@ export async function getReplyById(id: string) {
     .lean();
 }
 
-
 // Update a reply
 export async function updateReply(id: string, content: string) {
   return Reply.findByIdAndUpdate(id, { content }, { new: true }).populate(
