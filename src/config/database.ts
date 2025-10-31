@@ -13,7 +13,7 @@ import mongoose, { ConnectOptions } from 'mongoose';
  * @type {string}
  */
 const { mongoDbDatabase, mongoDbPassword, mongoDbUserName } = enirementVariables.mongoDbConfig;
-const uri = `mongodb+srv://${mongoDbUserName}:${mongoDbPassword}@cluster0.ywnsq.mongodb.net/${mongoDbDatabase}?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${mongoDbUserName}:${mongoDbPassword}@blog.xagb6ff.mongodb.net/?retryWrites=true&w=majority`;
 
 /**
  * Establishes a connection to the MongoDB Atlas database
@@ -30,17 +30,28 @@ const uri = `mongodb+srv://${mongoDbUserName}:${mongoDbPassword}@cluster0.ywnsq.
  *   await client.close();
  * }
  */
-export async function connectToMongoDB(): Promise<void> {
-  try {
-    await mongoose.connect(uri, {
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 30000,
-      autoIndex: true,
-      connectTimeoutMS: 50000,
-    } as ConnectOptions);
-    console.log('✅ Successfully connected to MongoDB with Mongoose');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
+export async function connectToMongoDB(retries = 5, delay = 5000): Promise<void> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await mongoose.connect(uri, {
+        appName: "devrel.vercel.integration",
+        maxIdleTimeMS: 5000,
+        serverSelectionTimeoutMS: 20000, // wait up to 20s before failing
+      } as ConnectOptions);
+
+      console.log('✅ Successfully connected to MongoDB with Mongoose');
+      return;
+    } catch (error) {
+      console.error(`❌ MongoDB connection failed (attempt ${attempt}/${retries}):`, error);
+
+      if (attempt < retries) {
+        console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
+        await new Promise(res => setTimeout(res, delay));
+        delay *= 2; // exponential backoff (5s → 10s → 20s → ...)
+      } else {
+        console.error('❌ All retry attempts failed. Exiting...');
+        process.exit(1);
+      }
+    }
   }
 }
