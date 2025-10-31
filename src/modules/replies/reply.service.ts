@@ -20,7 +20,7 @@ export async function createReply(content: string, userId: string, commentId: st
 
 // Get replies for a comment
 export async function getRepliesByComment(commentId: string) {
-  return Reply.find({ commentId })
+  return Reply.find({ commentId: new Types.ObjectId(commentId) })
     .populate('userId', 'firstName lastName email')
     .sort({ createdAt: 1 });
 }
