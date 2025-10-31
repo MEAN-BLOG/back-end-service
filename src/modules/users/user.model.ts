@@ -146,12 +146,6 @@ userSchema.statics.findByEmail = function (email: string) {
 };
 
 /**
- * Index for better query performance
- */
-userSchema.index({ email: 1 });
-userSchema.index({ role: 1 });
-
-/**
  * Export the User model
  */
 export default mongoose.model<IUser>('User', userSchema);
