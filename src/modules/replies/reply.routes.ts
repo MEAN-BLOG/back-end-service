@@ -18,9 +18,6 @@ const router = Router();
  * @openapi
  * components:
  *   schemas:
- *     # ========================================================
- *     # ErrorResponse
- *     # ========================================================
  *     ErrorResponse:
  *       type: object
  *       properties:
@@ -45,63 +42,6 @@ const router = Router();
  *               message:
  *                 type: string
  *                 example: "Content is required"
-
- *     # ========================================================
- *     # Reply
- *     # ========================================================
- *     Reply:
- *       type: object
- *       properties:
- *         _id:
- *           type: string
- *           example: "507f1f77bcf86cd799439012"
- *         content:
- *           type: string
- *           example: "This is a reply to your comment"
- *         commentId:
- *           type: string
- *           example: "507f1f77bcf86cd799439011"
- *         userId:
- *           type: string
- *           example: "507f1f77bcf86cd799439013"
- *         createdAt:
- *           type: string
- *           format: date-time
- *           example: "2025-10-22T10:30:00.000Z"
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           example: "2025-10-22T11:00:00.000Z"
- *       required:
- *         - _id
- *         - content
- *         - commentId
- *         - userId
- *         - createdAt
- *         - updatedAt
-
- *     # ========================================================
- *     # PaginationResponse
- *     # ========================================================
- *     PaginationResponse:
- *       type: object
- *       properties:
- *         total:
- *           type: integer
- *           example: 25
- *           description: Total number of items available
- *         page:
- *           type: integer
- *           example: 1
- *           description: Current page number
- *         limit:
- *           type: integer
- *           example: 10
- *           description: Number of items per page
- *         totalPages:
- *           type: integer
- *           example: 3
- *           description: Total number of pages based on total and limit
  */
 
 /**
@@ -490,6 +430,7 @@ router.put(
  *         description: Not Found
  *         content:
  *           application/json:
+ *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  *             example:
  *               status: 'error'
